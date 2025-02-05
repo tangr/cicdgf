@@ -9,6 +9,7 @@
 bin/
 **/.DS_Store
 main.exe
+main
 output/
 manifest/output/
 temp/
