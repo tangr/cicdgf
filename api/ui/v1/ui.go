@@ -8,5 +8,6 @@ type UiReq struct {
 	g.Meta `path:"/ui" tags:"ui" method:"get" summary:"ui console index"`
 }
 type UiRes struct {
-	g.Meta `mime:"text/html" example:"string"`
+	g.Meta  `mime:"text/html" example:"string"`
+	Content string
 }
