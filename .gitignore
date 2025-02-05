@@ -8,7 +8,6 @@
 .vscode/
 bin/
 **/.DS_Store
-gf
 main
 main.exe
 output/
@@ -16,4 +15,3 @@ manifest/output/
 temp/
 temp.yaml
 bin
-**/config/config.yaml
