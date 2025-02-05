@@ -4,12 +4,14 @@ go 1.22.0
 
 toolchain go1.22.9
 
-require github.com/gogf/gf/v2 v2.8.3
+require (
+	github.com/gogf/gf/contrib/drivers/mysql/v2 v2.8.3
+	github.com/gogf/gf/v2 v2.8.3
+)
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
-	github.com/clbanning/mxj v1.8.5-0.20200714211355-ff02cfb8ea28 // indirect
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
@@ -17,9 +19,6 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
-	github.com/gogf/gf v1.16.9 // indirect
-	github.com/gogf/gf/contrib/drivers/mysql/v2 v2.8.3 // indirect
-	github.com/gomodule/redigo v1.9.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grokify/html-strip-tags-go v0.1.0 // indirect
