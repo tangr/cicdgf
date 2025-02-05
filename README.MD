@@ -1,4 +1,4 @@
 # GoFrame Template For SingleRepo
 
-Quick Start: 
+Quick Start:
 - https://goframe.org/quick
