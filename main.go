@@ -1,6 +1,8 @@
 package main
 
 import (
+	"cicdgf/internal/boot"
+	_ "cicdgf/internal/boot"
 	_ "cicdgf/internal/packed"
 
 	_ "github.com/gogf/gf/contrib/drivers/mysql/v2"
@@ -11,5 +13,6 @@ import (
 )
 
 func main() {
+	boot.InitView()
 	cmd.Main.Run(gctx.GetInitCtx())
 }
