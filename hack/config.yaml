@@ -1,4 +1,3 @@
-
 # CLI tool, only in development environment.
 # https://goframe.org/docs/cli
 gfcli:
@@ -6,6 +5,7 @@ gfcli:
     dao:
       - link: "mysql:yax_ops_dt2_cicdgf:ZS9ArFJznAbObCf@tcp(yax-ops-dt2-mysql0.yax.tech:3306)/yax_ops_dt2_cicdgf"
         descriptionTag: true
+        tables: "cicd_user,cicd_group"
 
   docker:
     build: "-a amd64 -s linux -p temp -ew"
