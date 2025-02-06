@@ -26,11 +26,17 @@ var (
 					user.NewV1(),
 				)
 			})
+
 			s.Group("/", func(group *ghttp.RouterGroup) {
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					ui.NewV1(),
 				)
+
+				group.GET("/test", func(r *ghttp.Request) {
+					r.Response.Write("Home Page")
+				})
+
 			})
 			s.Run()
 			return nil
