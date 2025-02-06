@@ -5,6 +5,8 @@ server:
   swaggerPath: "/swagger"
   server-root: "resource/public"
   cas-sso: false
+  cas-server: https://sso-prod.yax.tech/cas
+  server-name: https://cicd-test.yax.tech
 
 # https://goframe.org/docs/core/glog-config
 logger:
