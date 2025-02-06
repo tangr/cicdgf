@@ -3,7 +3,8 @@ server:
   address: ":8000"
   openapiPath: "/api.json"
   swaggerPath: "/swagger"
-  serverRoot: "resource/public"
+  server-root: "resource/public"
+  cas-sso: false
 
 # https://goframe.org/docs/core/glog-config
 logger:
@@ -18,6 +19,6 @@ database:
 # Template.
 viewer:
   paths: ["resource/template"]
-  DefaultFile: "index.html"
-  Delimiters: ["{{", "}}"]
+  default-file: "index.html"
+  delimiters: ["{{", "}}"]
   debug: true
