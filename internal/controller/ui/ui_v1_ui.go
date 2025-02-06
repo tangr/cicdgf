@@ -11,9 +11,9 @@ import (
 func (c *ControllerV1) Ui(ctx context.Context, req *v1.UiReq) (response *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
-	err = r.Response.WriteTpl("cicd/list.html", g.Map{
-		"Title":          "欢迎页面",
-		"Content":        "这是通过模板渲染的内容",
+	err = r.Response.WriteTpl("ui.html", g.Map{
+		"Title":          "111欢迎页面",
+		"Content":        "aaaa:bbb:ccc",
 		"url":            "/",
 		"pipelines":      "pipelines",
 		"newPipelineUrl": "/pipelines/new",
