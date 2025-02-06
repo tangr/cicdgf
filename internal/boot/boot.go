@@ -44,7 +44,7 @@ func emailPrefix(email interface{}) string {
 }
 
 func shortName(fullname string) string {
-	g.Log().Debug(context.Background(), "shortName function called with fullname: ", fullname)
+	g.Log().Debug(context.Background(), "shortName function called with fullname:", fullname)
 
 	if fullname == "" {
 		return fullname
