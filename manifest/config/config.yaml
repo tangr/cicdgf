@@ -5,6 +5,7 @@ server:
   swaggerPath: "/swagger"
   server-root: "resource/public"
   cas-sso: false
+  author_enable: false
 
 cas-sso:
   cas-server-url: https://sso-prod.yax.tech/cas

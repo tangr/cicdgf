@@ -6,7 +6,7 @@
     </a>
     <a class="item" href="/">CICD</a>
     <div class="right menu">
-      {{if or (eq .Config.server.console.AuthorEnable false) (eq .Session.SessionKeyUser.IsAdmin true)}}
+      {{if or (eq .Config.server.author_enable false) (eq .Session.SessionKeyUser.IsAdmin true)}}
       <div class="ui right dropdown item">
         Admin
         <i class="dropdown icon"></i>
