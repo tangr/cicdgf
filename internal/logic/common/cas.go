@@ -6,15 +6,8 @@ import (
 	"fmt"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gctx"
 )
-
-type CasConfig struct {
-	ServerURL   string // CAS服务器地址 例如: https://cas.example.com/cas
-	Service     string // 本服务地址 例如: http://localhost:8199
-	ValidateURL string // 票据验证地址
-	LoginURL    string // 登录地址
-	LogoutURL   string // 登出地址
-}
 
 type CasResponse struct {
 	XMLName xml.Name `xml:"serviceResponse"`
@@ -35,19 +28,28 @@ type CasResponse struct {
 	Failure string `xml:"authenticationFailure"`
 }
 
+type CasConfig struct {
+	CasServerURL string `json:"CasServerURL"`
+	ServiceURL   string `json:"serviceURL"`
+	ValidateURL  string `json:"validateURL"`
+	LoginURL     string `json:"loginURL"`
+	LogoutURL    string `json:"logoutURL"`
+}
+
 var (
-	Cfg = CasConfig{
-		ServerURL:   "https://sso-prod.yax.tech/cas",
-		Service:     "http://localhost:8000",
-		ValidateURL: "/serviceValidate",
-		LoginURL:    "/login",
-		LogoutURL:   "/logout",
-	}
+	Cfg *CasConfig
 )
+
+func init() {
+	ctx := gctx.New()
+	if err := g.Cfg().MustGet(ctx, "cas-sso").Scan(&Cfg); err != nil {
+		panic(err)
+	}
+}
 
 func ValidateSSOSession(ctx context.Context, ticket string, service string) (*CasResponse, error) {
 	validateURL := fmt.Sprintf("%s%s?ticket=%s&service=%s",
-		Cfg.ServerURL,
+		Cfg.CasServerURL,
 		Cfg.ValidateURL,
 		ticket,
 		service,

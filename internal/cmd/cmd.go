@@ -44,9 +44,9 @@ var (
 				group.GET("/login", func(r *ghttp.Request) {
 					// 重定向到CAS服务器
 					redirectURL := fmt.Sprintf("%s%s?service=%s/callback",
-						common.Cfg.ServerURL,
+						common.Cfg.CasServerURL,
 						common.Cfg.LoginURL,
-						common.Cfg.Service,
+						common.Cfg.ServiceURL,
 					)
 					r.Response.RedirectTo(redirectURL)
 				})
@@ -59,7 +59,7 @@ var (
 						return
 					}
 
-					callbackURL := fmt.Sprintf("%s/callback", common.Cfg.Service)
+					callbackURL := fmt.Sprintf("%s/callback", common.Cfg.ServiceURL)
 					casResp, err := common.ValidateSSOSession(r.Context(), ticket, callbackURL)
 					if err != nil {
 						r.Response.Write("CAS validation failed")
@@ -92,9 +92,9 @@ var (
 
 					// 重定向到CAS全局登出
 					logoutURL := fmt.Sprintf("%s%s?service=%s",
-						common.Cfg.ServerURL,
+						common.Cfg.CasServerURL,
 						common.Cfg.LogoutURL,
-						common.Cfg.Service,
+						common.Cfg.ServiceURL,
 					)
 					r.Response.RedirectTo(logoutURL)
 				})
