@@ -5,8 +5,15 @@ server:
   swaggerPath: "/swagger"
   server-root: "resource/public"
   cas-sso: false
+
+cas-sso:
   cas-server-url: https://sso-prod.yax.tech/cas
   service-url: http://localhost:8000
+  # ServerURL: "https://sso-prod.yax.tech/cas"
+  # Service: "http://localhost:8000"
+  validate-url: "/serviceValidate"
+  login-url: "/login"
+  logout-url: "/logout"
 
 # https://goframe.org/docs/core/glog-config
 logger:
