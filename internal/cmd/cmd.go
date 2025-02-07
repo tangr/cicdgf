@@ -146,7 +146,15 @@ var (
 
 				// 仪表盘（需要登录）
 				group.GET("/dashboard", func(r *ghttp.Request) {
+					sessionData, err := r.Session.Data()
+					if err != nil {
+						g.Log().Error(context.Background(), "sessionData:", err)
+					}
+					g.Log().Debug(context.Background(), "All session data:", sessionData)
+
 					user := r.Session.MustGet("user").String()
+					g.Log().Debug(context.Background(), "user:", user)
+
 					if user == "" {
 						r.Response.RedirectTo("/login")
 						return
