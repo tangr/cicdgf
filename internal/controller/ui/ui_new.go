@@ -15,18 +15,28 @@ type UiReq struct {
 	g.Meta `path:"/" tags:"ui" method:"get" summary:"ui console index"`
 }
 
-type UserReq struct {
+type UserGetListReq struct {
 	g.Meta `path:"/users" tags:"ui" method:"get" summary:"ui console index"`
 }
 
-type GroupReq struct {
+type GroupGetListReq struct {
 	g.Meta `path:"/groups" tags:"ui" method:"get" summary:"ui console index"`
+}
+
+type GroupGetOneReq struct {
+	g.Meta `path:"/groups/{id}" tags:"ui" method:"get" summary:"ui console index"`
+}
+
+type GroupCreateReq struct {
+	g.Meta `path:"/groups" tags:"ui" method:"post" summary:"ui console index"`
 }
 
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
-	User(ctx context.Context, req *UserReq) (res *ghttp.Response, err error)
-	Group(ctx context.Context, req *GroupReq) (res *ghttp.Response, err error)
+	User(ctx context.Context, req *UserGetListReq) (res *ghttp.Response, err error)
+	GroupGetList(ctx context.Context, req *GroupGetListReq) (res *ghttp.Response, err error)
+	GroupGetOne(ctx context.Context, req *GroupGetOneReq) (res *ghttp.Response, err error)
+	GroupCreate(ctx context.Context, req *GroupCreateReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}

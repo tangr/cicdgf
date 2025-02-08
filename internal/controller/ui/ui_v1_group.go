@@ -7,15 +7,35 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
-func (c *ControllerV1) Group(ctx context.Context, req *GroupReq) (response *ghttp.Response, err error) {
+func (c *ControllerV1) GroupGetList(ctx context.Context, req *GroupGetListReq) (response *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
 	err = r.Response.WriteTpl("groups/list.html", g.Map{
-		"Title":          "111欢迎页面",
-		"Content":        "aaaa:bbb:ccc",
-		"url":            "/",
-		"pipelines":      "pipelines",
-		"newPipelineUrl": "/pipelines/new",
+		"url": "/groups/",
+		// "groups":      groups,
+		"newGroupUrl": "/groups/new",
+	})
+	return nil, err
+}
+
+func (c *ControllerV1) GroupGetOne(ctx context.Context, req *GroupGetOneReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	err = r.Response.WriteTpl("groups/list.html", g.Map{
+		"url": "/groups/",
+		// "groups":      groups,
+		"newGroupUrl": "/groups/new",
+	})
+	return nil, err
+}
+
+func (c *ControllerV1) GroupCreate(ctx context.Context, req *GroupCreateReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	err = r.Response.WriteTpl("groups/list.html", g.Map{
+		"url": "/groups/",
+		// "groups":      groups,
+		"newGroupUrl": "/groups/new",
 	})
 	return nil, err
 }
