@@ -25,7 +25,7 @@
 <form class="ui form" id="form_id" method="POST" action="{{.apiurl}}">
   <div class="field">
     <label>Groupname</label>
-    <input type="text" name="groupname" id="groupname" placeholder="Groupname" autocomplete="off">
+    <input type="text" name="groupname" id="groupname" value="{{ .group_name }}" placeholder="Groupname" autocomplete="off">
   </div>
 
   <button class="ui button" type="submit" id="form_save">Submit</button>
@@ -35,7 +35,7 @@
 
 {{include "base_foot.html" .}}
 
-<script type="text/javascript">
+<!-- <script type="text/javascript">
     $('.ui.dropdown').dropdown();
     $.ajax({
         url: "{{ .apiurl }}",
@@ -46,7 +46,7 @@
         }
     });
 
-</script>
+</script> -->
 
 
 </body>

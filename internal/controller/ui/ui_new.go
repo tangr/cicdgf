@@ -31,12 +31,22 @@ type GroupCreateReq struct {
 	g.Meta `path:"/groups" tags:"ui" method:"post" summary:"ui console index"`
 }
 
+type GroupUpdateReq struct {
+	g.Meta `path:"/groups/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+}
+
+type GroupNewReq struct {
+	g.Meta `path:"/groupnew" tags:"ui" method:"get" summary:"ui console index"`
+}
+
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
 	User(ctx context.Context, req *UserGetListReq) (res *ghttp.Response, err error)
 	GroupGetList(ctx context.Context, req *GroupGetListReq) (res *ghttp.Response, err error)
 	GroupGetOne(ctx context.Context, req *GroupGetOneReq) (res *ghttp.Response, err error)
 	GroupCreate(ctx context.Context, req *GroupCreateReq) (res *ghttp.Response, err error)
+	GroupUpdate(ctx context.Context, req *GroupUpdateReq) (res *ghttp.Response, err error)
+	GroupNew(ctx context.Context, req *GroupNewReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}
