@@ -19,9 +19,14 @@ type UserReq struct {
 	g.Meta `path:"/users" tags:"ui" method:"get" summary:"ui console index"`
 }
 
+type GroupReq struct {
+	g.Meta `path:"/groups" tags:"ui" method:"get" summary:"ui console index"`
+}
+
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
 	User(ctx context.Context, req *UserReq) (res *ghttp.Response, err error)
+	Group(ctx context.Context, req *GroupReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}

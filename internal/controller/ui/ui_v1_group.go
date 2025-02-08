@@ -7,7 +7,7 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
-func (c *ControllerV1) User(ctx context.Context, req *UserReq) (response *ghttp.Response, err error) {
+func (c *ControllerV1) Group(ctx context.Context, req *GroupReq) (response *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
 	err = r.Response.WriteTpl("groups/list.html", g.Map{
