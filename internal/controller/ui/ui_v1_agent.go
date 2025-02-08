@@ -23,3 +23,13 @@ func (c *ControllerV1) AgentGetList(ctx context.Context, req *AgentGetListReq) (
 	})
 	return nil, err
 }
+
+func (c *ControllerV1) AgentNew(ctx context.Context, req *AgentNewReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	err = r.Response.WriteTpl("agents/new.html", g.Map{
+		"url":         "/agents",
+		"newAgentUrl": "/agents",
+	})
+	return nil, err
+}
