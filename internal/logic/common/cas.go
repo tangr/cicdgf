@@ -69,6 +69,8 @@ func ValidateSSOSession(ctx context.Context, ticket string, service string) (*Ca
 		return nil, err
 	}
 
+	g.Log().Debug(ctx, "cas username:", casResp.Success.User)
+
 	if casResp.Success.User == "" || casResp.Failure != "" {
 		return &casResp, fmt.Errorf("invalid SSO session")
 	}

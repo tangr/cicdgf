@@ -10,7 +10,7 @@ import (
 func (c *ControllerV1) User(ctx context.Context, req *UserGetListReq) (response *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
-	err = r.Response.WriteTpl("groups/list.html", g.Map{
+	err = r.Response.WriteTpl("users/list.html", g.Map{
 		"Title":          "111欢迎页面",
 		"Content":        "aaaa:bbb:ccc",
 		"url":            "/",
