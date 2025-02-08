@@ -31,12 +31,12 @@ func (s *groupService) GetListGroups(ctx context.Context) (groups []ListGroups, 
 func (s *groupService) New(groupname string) int64 {
 	ctx := context.Background()
 
-	newgroup := g.Map{
+	new_group := g.Map{
 		"group_name": groupname,
 		"parent_id":  0,
 	}
 
-	result, err := dao.CicdGroup.Ctx(ctx).Insert(newgroup)
+	result, err := dao.CicdGroup.Ctx(ctx).Insert(new_group)
 	if err != nil {
 		g.Log().Error(ctx, err)
 	}

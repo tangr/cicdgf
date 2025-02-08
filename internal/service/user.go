@@ -38,11 +38,11 @@ func (s *userService) GetListUsers(ctx context.Context) (users []ListUsers, err 
 func (s *userService) New(username string) int64 {
 	ctx := context.Background()
 
-	newuseer := g.Map{
+	new_user := g.Map{
 		"user_name": username,
 	}
 
-	result, err := dao.CicdUser.Ctx(ctx).Insert(newuseer)
+	result, err := dao.CicdUser.Ctx(ctx).Insert(new_user)
 	if err != nil {
 		g.Log().Error(ctx, err)
 	}

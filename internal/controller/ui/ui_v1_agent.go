@@ -3,6 +3,7 @@ package ui
 import (
 	"cicdgf/internal/service"
 	"context"
+	"fmt"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -31,5 +32,17 @@ func (c *ControllerV1) AgentNew(ctx context.Context, req *AgentNewReq) (response
 		"url":         "/agents",
 		"newAgentUrl": "/agents",
 	})
+	return nil, err
+}
+
+func (c *ControllerV1) AgentCreate(ctx context.Context, req *AgentCreateReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	var agent_name string = r.Get("agent_name").String()
+	var agent_ipaddr string = r.Get("agent_ipaddr").String()
+	agent_id := service.Agent.New(agent_name, agent_ipaddr)
+
+	r.Response.RedirectTo("/agents/"+fmt.Sprint(agent_id), 303)
+
 	return nil, err
 }

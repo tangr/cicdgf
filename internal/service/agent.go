@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 var Agent = agentService{}
@@ -26,4 +27,25 @@ func (s *agentService) GetListAgents(ctx context.Context) (users []ListAgents, e
 	}
 
 	return
+}
+
+func (s *agentService) New(agent_name string, agent_ipaddr string) int64 {
+	ctx := context.Background()
+
+	new_agent := g.Map{
+		"agent_name":   agent_name,
+		"agent_ipaddr": agent_ipaddr,
+	}
+
+	result, err := dao.CicdAgent.Ctx(ctx).Insert(new_agent)
+	if err != nil {
+		g.Log().Error(ctx, err)
+	}
+
+	agent_id, err := result.LastInsertId()
+	if err != nil {
+		g.Log().Error(ctx, err)
+	}
+
+	return agent_id
 }
