@@ -21,11 +21,8 @@ func (s *groupService) GetListGroups(ctx context.Context) (groups []ListGroups, 
 	if err = dao.CicdGroup.Ctx(ctx).
 		Fields("id,group_name").
 		Scan(&groups); err != nil {
+		g.Log().Error(ctx, "Failed to get groups:", err)
 		return nil, gerror.Wrap(err, "get groups failed")
-	}
-
-	if len(groups) == 0 {
-		return nil, gerror.New("not found any group")
 	}
 
 	return

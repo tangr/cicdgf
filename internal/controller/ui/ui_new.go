@@ -15,10 +15,24 @@ type UiReq struct {
 	g.Meta `path:"/" tags:"ui" method:"get" summary:"ui console index"`
 }
 
+// users
 type UserGetListReq struct {
 	g.Meta `path:"/users" tags:"ui" method:"get" summary:"ui console index"`
 }
 
+type UserNewReq struct {
+	g.Meta `path:"/usernew" tags:"ui" method:"get" summary:"ui console index"`
+}
+
+type UserCreateReq struct {
+	g.Meta `path:"/users" tags:"ui" method:"post" summary:"ui console index"`
+}
+
+type UserGetOneReq struct {
+	g.Meta `path:"/users/{id}" tags:"ui" method:"get" summary:"ui console index"`
+}
+
+// groups
 type GroupGetListReq struct {
 	g.Meta `path:"/groups" tags:"ui" method:"get" summary:"ui console index"`
 }
@@ -41,7 +55,11 @@ type GroupNewReq struct {
 
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
-	User(ctx context.Context, req *UserGetListReq) (res *ghttp.Response, err error)
+	UserGetList(ctx context.Context, req *UserGetListReq) (res *ghttp.Response, err error)
+	UserNew(ctx context.Context, req *UserNewReq) (res *ghttp.Response, err error)
+	UserCreate(ctx context.Context, req *UserCreateReq) (res *ghttp.Response, err error)
+	UserGetOne(ctx context.Context, req *UserGetOneReq) (res *ghttp.Response, err error)
+
 	GroupGetList(ctx context.Context, req *GroupGetListReq) (res *ghttp.Response, err error)
 	GroupGetOne(ctx context.Context, req *GroupGetOneReq) (res *ghttp.Response, err error)
 	GroupCreate(ctx context.Context, req *GroupCreateReq) (res *ghttp.Response, err error)
