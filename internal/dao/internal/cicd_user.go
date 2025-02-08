@@ -21,8 +21,7 @@ type CicdUserDao struct {
 // CicdUserColumns defines and stores column names for the table cicd_user.
 type CicdUserColumns struct {
 	Id        string //
-	Email     string //
-	Password  string //
+	Username  string //
 	GroupId   string //
 	UpdatedAt string //
 }
@@ -30,8 +29,7 @@ type CicdUserColumns struct {
 // cicdUserColumns holds the columns for the table cicd_user.
 var cicdUserColumns = CicdUserColumns{
 	Id:        "id",
-	Email:     "email",
-	Password:  "password",
+	Username:  "username",
 	GroupId:   "group_id",
 	UpdatedAt: "updated_at",
 }

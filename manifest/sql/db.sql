@@ -93,10 +93,9 @@ CREATE TABLE IF NOT EXISTS `cicd_group` (
 
 CREATE TABLE `cicd_user` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
+  `username` varchar(255) NOT NULL,
   `group_id` JSON NOT NULL,
   `updated_at` bigint(10) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
+  UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

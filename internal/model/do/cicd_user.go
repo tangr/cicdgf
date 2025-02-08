@@ -12,8 +12,7 @@ import (
 type CicdUser struct {
 	g.Meta    `orm:"table:cicd_user, do:true"`
 	Id        interface{} //
-	Email     interface{} //
-	Password  interface{} //
+	Username  interface{} //
 	GroupId   interface{} //
 	UpdatedAt interface{} //
 }
