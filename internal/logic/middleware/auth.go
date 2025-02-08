@@ -34,7 +34,7 @@ func AuthMiddleware(r *ghttp.Request) {
 
 	// 定期验证 SSO session
 	lastValidateTime := r.Session.MustGet("last_validate_time").Time()
-	if time.Since(lastValidateTime) > 5*time.Minute {
+	if time.Since(lastValidateTime) > 500*time.Minute {
 		callbackURL := fmt.Sprintf("%s/callback", common.Cfg.ServiceURL)
 		_, err := common.ValidateSSOSession(r.Context(), ticket, callbackURL)
 		if err != nil {
