@@ -5,7 +5,6 @@
 package ui
 
 import (
-	"cicdgf/api/ui"
 	"context"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -20,13 +19,13 @@ type UserReq struct {
 	g.Meta `path:"/users" tags:"ui" method:"get" summary:"ui console index"`
 }
 
-type ControllerV1 struct{}
-
-func NewV1() ui.IUiV1 {
-	return &ControllerV1{}
-}
-
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
 	User(ctx context.Context, req *UserReq) (res *ghttp.Response, err error)
+}
+
+type ControllerV1 struct{}
+
+func NewV1() IUiV1 {
+	return &ControllerV1{}
 }
