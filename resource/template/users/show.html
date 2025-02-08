@@ -31,7 +31,7 @@
   <div class="field">
     <label>Group</label>
     <select name="groups" multiple="" class="ui fluid dropdown" id="group_id">
-      {{range $val := .groups}}<option value="{{$val.Id}}">{{$val.Group_name}}</div>{{end}}
+      {{range $val := .allgroups}}<option value="{{$val.Id}}">{{$val.Group_name}}</div>{{end}}
     </select>
   </div>
 
@@ -43,17 +43,8 @@
 <script type="text/javascript">
     $('.ui.dropdown').dropdown();
 
-    $.ajax({
-        url: "{{ .apiurl }}",
-        type: 'GET',
-        dataType: 'json',
-        success: function(res) {
-            $('#username').val(res.username);
-            var groups = res.groups;
-            groups=JSON.parse(groups);
-            $('#group_id').dropdown('set selected', groups);
-        }
-    });
+    var usergroups = JSON.parse('{{ .usergroups }}');
+    $('#group_id').dropdown('set selected', usergroups);
 
 </script>
 
