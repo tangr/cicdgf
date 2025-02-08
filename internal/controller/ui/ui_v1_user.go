@@ -54,19 +54,41 @@ func (c *ControllerV1) UserGetOne(ctx context.Context, req *UserGetOneReq) (resp
 	r := g.RequestFromCtx(ctx)
 
 	userid := r.Get("id").String()
-	username := service.User.GetUserName(userid)
-	groups, err := service.Group.GetListGroups(ctx)
+	user, err := service.User.GetUserDetail(userid)
 	if err != nil {
 		return nil, err
 	}
 
-	g.Log().Debugf(ctx, "userid: %s, username: %s", userid, username)
+	allgroups, err := service.Group.GetListGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	g.Log().Debug(ctx, "user: ", user)
+
+	g.Log().Debugf(ctx, "userid: %s, username: %s", userid, user.Username)
+
+	g.Log().Debug(ctx, "allgroups:", allgroups)
+	g.Log().Debug(ctx, "usergroups: ", user.GroupId)
 
 	err = r.Response.WriteTpl("users/show.html", g.Map{
-		"url":      "/users/",
-		"apiurl":   "/users/" + userid + "/put",
-		"username": username,
-		"groups":   groups,
+		"url":        "/users/",
+		"apiurl":     "/users/" + userid + "/put",
+		"username":   user.Username,
+		"allgroups":  allgroups,
+		"usergroups": user.GroupId,
 	})
+	return nil, err
+}
+
+func (c *ControllerV1) UserUpdate(ctx context.Context, req *UserUpdateReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	var userid string = r.Get("id").String()
+	var username string = r.Get("username").String()
+	group_id := r.Get("groups").Strings()
+	_ = service.User.Update(userid, username, group_id)
+	r.Response.RedirectTo("/users/"+fmt.Sprint(userid), 303)
+
 	return nil, err
 }
