@@ -37,7 +37,7 @@
         {{range .users}}
         <tr>
           <td class="collapsing selectable">
-            <a href="{{$.url}}{{.Id}}"><i class="user code icon"></i>{{.Email}}</a>
+            <a href="{{$.url}}{{.Id}}"><i class="user code icon"></i>{{.Username}}</a>
           </td>
           <td></td>
           <td class="right aligned" data-tooltip="{{.Updated_at|timeToStr}}">{{.Updated_at|timeDiffNow}}</td>
