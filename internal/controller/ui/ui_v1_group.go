@@ -46,7 +46,7 @@ func (c *ControllerV1) GroupCreate(ctx context.Context, req *GroupCreateReq) (re
 
 	var groupname string = r.Get("groupname").String()
 	groupid := service.Group.New(groupname)
-	r.Response.RedirectTo("/groups/" + fmt.Sprint(groupid))
+	r.Response.RedirectTo("/groups/"+fmt.Sprint(groupid), 303)
 
 	return nil, err
 }

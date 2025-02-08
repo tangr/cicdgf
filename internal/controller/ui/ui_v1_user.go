@@ -45,7 +45,7 @@ func (c *ControllerV1) UserCreate(ctx context.Context, req *UserCreateReq) (resp
 
 	var username string = r.Get("username").String()
 	userid := service.User.New(username)
-	r.Response.RedirectTo("/users/" + fmt.Sprint(userid))
+	r.Response.RedirectTo("/users/"+fmt.Sprint(userid), 303)
 
 	return nil, err
 }
