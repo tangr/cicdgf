@@ -70,6 +70,18 @@ type AgentUpdateReq struct {
 type PipelineGetListReq struct {
 	g.Meta `path:"/pipelines" tags:"ui" method:"get" summary:"ui console index"`
 }
+type PipelineNewReq struct {
+	g.Meta `path:"/pipelinenew" tags:"ui" method:"get" summary:"ui console index"`
+}
+type PipelineCreateReq struct {
+	g.Meta `path:"/pipelines" tags:"ui" method:"post" summary:"ui console index"`
+}
+type PipelineGetOneReq struct {
+	g.Meta `path:"/pipelines/{id}" tags:"ui" method:"get" summary:"ui console index"`
+}
+type PipelineUpdateReq struct {
+	g.Meta `path:"/pipelines/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+}
 
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
@@ -93,6 +105,9 @@ type IUiV1 interface {
 	AgentUpdate(ctx context.Context, req *AgentUpdateReq) (res *ghttp.Response, err error)
 
 	PipelineGetList(ctx context.Context, req *PipelineGetListReq) (res *ghttp.Response, err error)
+	PipelineNew(ctx context.Context, req *PipelineNewReq) (res *ghttp.Response, err error)
+	PipelineCreate(ctx context.Context, req *PipelineCreateReq) (res *ghttp.Response, err error)
+	PipelineGetOne(ctx context.Context, req *PipelineGetOneReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}
