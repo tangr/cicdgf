@@ -77,17 +77,17 @@ func (s *userService) GetUserDetail(user_id string) (*UserDetail, error) {
 func (s *userService) Update(userid string, username string, groups []string) string {
 	ctx := context.Background()
 
-	newuser := g.Map{
+	new_user := g.Map{
 		"group_id":   groups,
 		"updated_at": gtime.Now().Timestamp(),
 	}
-	g.Log().Debug(ctx, "newuser:", newuser)
+	g.Log().Debug(ctx, "new_user:", new_user)
 	g.Log().Debug(ctx, "userid:", userid)
 
 	_, err := dao.CicdUser.
 		Ctx(ctx).
 		Where("id=?", userid).
-		Update(newuser)
+		Update(new_user)
 	if err != nil {
 		g.Log().Error(ctx, err)
 	}
