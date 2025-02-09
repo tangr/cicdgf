@@ -62,6 +62,9 @@ type AgentCreateReq struct {
 type AgentGetOneReq struct {
 	g.Meta `path:"/agents/{id}" tags:"ui" method:"get" summary:"ui console index"`
 }
+type AgentUpdateReq struct {
+	g.Meta `path:"/agents/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+}
 
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
@@ -82,6 +85,7 @@ type IUiV1 interface {
 	AgentNew(ctx context.Context, req *AgentNewReq) (res *ghttp.Response, err error)
 	AgentCreate(ctx context.Context, req *AgentCreateReq) (res *ghttp.Response, err error)
 	AgentGetOne(ctx context.Context, req *AgentGetOneReq) (res *ghttp.Response, err error)
+	AgentUpdate(ctx context.Context, req *AgentUpdateReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}
