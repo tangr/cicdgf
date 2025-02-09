@@ -25,6 +25,27 @@ func (c *ControllerV1) GroupGetList(ctx context.Context, req *GroupGetListReq) (
 	return nil, err
 }
 
+func (c *ControllerV1) GroupNew(ctx context.Context, req *GroupNewReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	err = r.Response.WriteTpl("groups/new.html", g.Map{
+		"url": "/groups/",
+		// "groups":      groups,
+		"newGroupUrl": "/groups",
+	})
+	return nil, err
+}
+
+func (c *ControllerV1) GroupCreate(ctx context.Context, req *GroupCreateReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	var groupname string = r.Get("groupname").String()
+	groupid := service.Group.New(groupname)
+	r.Response.RedirectTo("/groups/"+fmt.Sprint(groupid), 303)
+
+	return nil, err
+}
+
 func (c *ControllerV1) GroupGetOne(ctx context.Context, req *GroupGetOneReq) (response *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
@@ -41,16 +62,6 @@ func (c *ControllerV1) GroupGetOne(ctx context.Context, req *GroupGetOneReq) (re
 	return nil, err
 }
 
-func (c *ControllerV1) GroupCreate(ctx context.Context, req *GroupCreateReq) (response *ghttp.Response, err error) {
-	r := g.RequestFromCtx(ctx)
-
-	var groupname string = r.Get("groupname").String()
-	groupid := service.Group.New(groupname)
-	r.Response.RedirectTo("/groups/"+fmt.Sprint(groupid), 303)
-
-	return nil, err
-}
-
 func (c *ControllerV1) GroupUpdate(ctx context.Context, req *GroupUpdateReq) (response *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
@@ -59,16 +70,5 @@ func (c *ControllerV1) GroupUpdate(ctx context.Context, req *GroupUpdateReq) (re
 	_ = service.Group.Update(groupid, groupname)
 	r.Response.RedirectTo("/groups/"+fmt.Sprint(groupid), 303)
 
-	return nil, err
-}
-
-func (c *ControllerV1) GroupNew(ctx context.Context, req *GroupNewReq) (response *ghttp.Response, err error) {
-	r := g.RequestFromCtx(ctx)
-
-	err = r.Response.WriteTpl("groups/new.html", g.Map{
-		"url": "/groups/",
-		// "groups":      groups,
-		"newGroupUrl": "/groups",
-	})
 	return nil, err
 }
