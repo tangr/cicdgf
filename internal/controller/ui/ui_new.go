@@ -15,6 +15,23 @@ type UiReq struct {
 	g.Meta `path:"/" tags:"ui" method:"get" summary:"ui console index"`
 }
 
+// groups
+type GroupGetListReq struct {
+	g.Meta `path:"/groups" tags:"ui" method:"get" summary:"ui console index"`
+}
+type GroupNewReq struct {
+	g.Meta `path:"/groupnew" tags:"ui" method:"get" summary:"ui console index"`
+}
+type GroupCreateReq struct {
+	g.Meta `path:"/groups" tags:"ui" method:"post" summary:"ui console index"`
+}
+type GroupGetOneReq struct {
+	g.Meta `path:"/groups/{id}" tags:"ui" method:"get" summary:"ui console index"`
+}
+type GroupUpdateReq struct {
+	g.Meta `path:"/groups/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+}
+
 // users
 type UserGetListReq struct {
 	g.Meta `path:"/users" tags:"ui" method:"get" summary:"ui console index"`
@@ -32,23 +49,6 @@ type UserUpdateReq struct {
 	g.Meta `path:"/users/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
 }
 
-// groups
-type GroupGetListReq struct {
-	g.Meta `path:"/groups" tags:"ui" method:"get" summary:"ui console index"`
-}
-type GroupGetOneReq struct {
-	g.Meta `path:"/groups/{id}" tags:"ui" method:"get" summary:"ui console index"`
-}
-type GroupCreateReq struct {
-	g.Meta `path:"/groups" tags:"ui" method:"post" summary:"ui console index"`
-}
-type GroupUpdateReq struct {
-	g.Meta `path:"/groups/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
-}
-type GroupNewReq struct {
-	g.Meta `path:"/groupnew" tags:"ui" method:"get" summary:"ui console index"`
-}
-
 // agents
 type AgentGetListReq struct {
 	g.Meta `path:"/agents" tags:"ui" method:"get" summary:"ui console index"`
@@ -59,24 +59,29 @@ type AgentNewReq struct {
 type AgentCreateReq struct {
 	g.Meta `path:"/agents" tags:"ui" method:"post" summary:"ui console index"`
 }
+type AgentGetOneReq struct {
+	g.Meta `path:"/agents/{id}" tags:"ui" method:"get" summary:"ui console index"`
+}
 
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
+
+	GroupGetList(ctx context.Context, req *GroupGetListReq) (res *ghttp.Response, err error)
+	GroupNew(ctx context.Context, req *GroupNewReq) (res *ghttp.Response, err error)
+	GroupCreate(ctx context.Context, req *GroupCreateReq) (res *ghttp.Response, err error)
+	GroupGetOne(ctx context.Context, req *GroupGetOneReq) (res *ghttp.Response, err error)
+	GroupUpdate(ctx context.Context, req *GroupUpdateReq) (res *ghttp.Response, err error)
+
 	UserGetList(ctx context.Context, req *UserGetListReq) (res *ghttp.Response, err error)
 	UserNew(ctx context.Context, req *UserNewReq) (res *ghttp.Response, err error)
 	UserCreate(ctx context.Context, req *UserCreateReq) (res *ghttp.Response, err error)
 	UserGetOne(ctx context.Context, req *UserGetOneReq) (res *ghttp.Response, err error)
 	UserUpdate(ctx context.Context, req *UserUpdateReq) (res *ghttp.Response, err error)
 
-	GroupGetList(ctx context.Context, req *GroupGetListReq) (res *ghttp.Response, err error)
-	GroupGetOne(ctx context.Context, req *GroupGetOneReq) (res *ghttp.Response, err error)
-	GroupCreate(ctx context.Context, req *GroupCreateReq) (res *ghttp.Response, err error)
-	GroupUpdate(ctx context.Context, req *GroupUpdateReq) (res *ghttp.Response, err error)
-	GroupNew(ctx context.Context, req *GroupNewReq) (res *ghttp.Response, err error)
-
 	AgentGetList(ctx context.Context, req *AgentGetListReq) (res *ghttp.Response, err error)
 	AgentNew(ctx context.Context, req *AgentNewReq) (res *ghttp.Response, err error)
 	AgentCreate(ctx context.Context, req *AgentCreateReq) (res *ghttp.Response, err error)
+	AgentGetOne(ctx context.Context, req *AgentGetOneReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}
