@@ -12,7 +12,7 @@ import (
 )
 
 type UiReq struct {
-	g.Meta `path:"/" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/ui" tags:"ui" method:"get" summary:"ui console index"`
 }
 
 // groups
@@ -83,6 +83,14 @@ type PipelineUpdateReq struct {
 	g.Meta `path:"/pipelines/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
 }
 
+// jobs
+type CicdGetListReq struct {
+	g.Meta `path:"/" tags:"ui" method:"get" summary:"ui console index"`
+}
+type CicdGetOneReq struct {
+	g.Meta `path:"/{id}" tags:"ui" method:"get" summary:"ui console index"`
+}
+
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
 
@@ -109,6 +117,9 @@ type IUiV1 interface {
 	PipelineCreate(ctx context.Context, req *PipelineCreateReq) (res *ghttp.Response, err error)
 	PipelineGetOne(ctx context.Context, req *PipelineGetOneReq) (res *ghttp.Response, err error)
 	PipelineUpdate(ctx context.Context, req *PipelineUpdateReq) (res *ghttp.Response, err error)
+
+	CicdGetList(ctx context.Context, req *CicdGetListReq) (res *ghttp.Response, err error)
+	CicdGetOne(ctx context.Context, req *CicdGetOneReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}
