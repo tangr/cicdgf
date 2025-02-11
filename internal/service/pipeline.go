@@ -59,7 +59,7 @@ func (s *pipelineService) New(pipeline_name string, group_id int, agent_id int, 
 	return pipeline_id
 }
 
-func (s *pipelineService) GetOne(pipeline_id string) (*PipelineDetail, error) {
+func (s *pipelineService) GetOne(pipeline_id int) (*PipelineDetail, error) {
 	ctx := context.Background()
 
 	record, err := dao.CicdPipeline.Ctx(ctx).

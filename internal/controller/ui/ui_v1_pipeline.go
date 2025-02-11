@@ -66,7 +66,7 @@ func (c *ControllerV1) PipelineCreate(ctx context.Context, req *PipelineCreateRe
 func (c *ControllerV1) PipelineGetOne(ctx context.Context, req *PipelineGetOneReq) (response *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
-	pipeline_id := r.Get("id").String()
+	pipeline_id := r.Get("id").Int()
 
 	pipeline, err := service.Pipeline.GetOne(pipeline_id)
 	if err != nil {
