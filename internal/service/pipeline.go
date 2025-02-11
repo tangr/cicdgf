@@ -19,6 +19,7 @@ type ListPipelines struct {
 
 type PipelineDetail struct {
 	Pipeline_name string `json:"pipeline_name"`
+	Group_id      string `json:"group_id"`
 	Agent_id      string `json:"agent_id"`
 	Concurrency   string `json:"concurrency"`
 	Body          string `json:"body"`
@@ -62,7 +63,7 @@ func (s *pipelineService) GetOne(pipeline_id string) (*PipelineDetail, error) {
 	ctx := context.Background()
 
 	record, err := dao.CicdPipeline.Ctx(ctx).
-		Fields("pipeline_name,agent_id,concurrency,body").
+		Fields("pipeline_name,group_id,agent_id,concurrency,body").
 		Where("id=?", pipeline_id).
 		One()
 
@@ -73,8 +74,31 @@ func (s *pipelineService) GetOne(pipeline_id string) (*PipelineDetail, error) {
 
 	return &PipelineDetail{
 		Pipeline_name: record["pipeline_name"].String(),
+		Group_id:      record["group_id"].String(),
 		Agent_id:      record["agent_id"].String(),
 		Concurrency:   record["concurrency"].String(),
 		Body:          record["body"].String(),
 	}, nil
+}
+
+func (s *pipelineService) Update(pipeline_id string, group_id string, agent_id string, pipeline_body string) string {
+	ctx := context.Background()
+
+	new_pipeline := g.Map{
+		"pipeline_id": pipeline_id,
+		"group_id":    group_id,
+		"agent_id":    agent_id,
+		"body":        pipeline_body,
+	}
+	g.Log().Debug(ctx, new_pipeline)
+
+	_, err := dao.CicdPipeline.
+		Ctx(ctx).
+		Where("id=?", pipeline_id).
+		Update(new_pipeline)
+	if err != nil {
+		g.Log().Error(ctx, err)
+	}
+
+	return pipeline_id
 }

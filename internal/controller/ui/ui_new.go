@@ -108,6 +108,7 @@ type IUiV1 interface {
 	PipelineNew(ctx context.Context, req *PipelineNewReq) (res *ghttp.Response, err error)
 	PipelineCreate(ctx context.Context, req *PipelineCreateReq) (res *ghttp.Response, err error)
 	PipelineGetOne(ctx context.Context, req *PipelineGetOneReq) (res *ghttp.Response, err error)
+	PipelineUpdate(ctx context.Context, req *PipelineUpdateReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}
