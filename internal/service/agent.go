@@ -63,7 +63,6 @@ func (s *agentService) GetAgent(agent_id string) (*AgentDetail, error) {
 		Fields("agent_name, ipaddr").
 		Where("id=?", agent_id).
 		One()
-
 	if err != nil {
 		g.Log().Error(ctx, err)
 		return nil, err
