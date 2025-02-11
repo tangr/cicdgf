@@ -27,7 +27,13 @@
     </tr>
   </thead>
   <tbody>
-
+    {{range .pipelines}}
+    <tr>
+      <td class="collapsing selectable" colspan="4">
+        <a href="{{$.url}}{{.Id}}"><i class="cogs icon"></i>{{.Pipeline_name|shortName}}</a>
+      </td>
+    </tr>
+    {{end}}
   </tbody>
 </table>
 

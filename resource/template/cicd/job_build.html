@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.pipeline_name|shortName}} - CICD</title>
+
+    {{include "base_head.html" .}}
+
+</head>
+<body>
+
+<div class="ui container maincontainer">
+
+    {{include "base_menu.html" .}}
+
+    <div class="ui breadcrumb">
+      <a class="section" href="{{.url|urlParentPath}}">Home</a>
+      <div class="divider"> / </div>
+      <a class="section" href="{{.url|urlParentPath}}">CICD</a>
+      <div class="divider"> / </div>
+      <a class="section" href="{{.url}}">{{.pipeline_name|shortName}}</a>
+      <div class="divider"> / </div>
+      <div class="active section">{{.job_id}}</div>
+    </div>
+
+    {{range .tasks}}
+
+    <div class="ui icon message">
+      <div class="content">
+
+        <div class="ui grid">
+          <div class="left floated left aligned six wide column">
+            <div class="header taskstatus1"></div>
+          </div>
+          <div class="right floated right aligned six wide column">Agent Last Actived: {{ .Actived|timeDiffNow }}</div>
+        </div>
+
+        <div class="ui divider"></div>
+        <p class="taskoutput" style="white-space: pre;"></p>
+        <div class="ui divider"></div>
+        <div class="taskstatus2" id="taskstatusbuttom"></div>
+
+        <!-- <i style="color: red;" class="times circle outline icon" id="abort_btn"></i> -->
+        {{if eq .Task_status "running"}}
+        <a class="modalbutton" data-url="{{$.taskurl}}/{{.Id}}/{{$.job_id}}/{{.Ipaddr}}/abort" data-status="aborted" data-tooltip="Stop" id="abort_btn"><i class="ui red stop circle outline icon"></i></a>
+        {{ end }}
+        <i class="arrow alternate circle up outline icon" id="up_btn" style="visibility: hidden"></i>
+      </div>
+        <hr>
+    </div>
+
+    <div id="jobtypeid" data-jobtype="BUILD" data-taskurl="{{$.taskurl}}{{.Id}}/log" data-aborturl="{{$.taskurl}}{{.Id}}/abort"></div>
+
+    {{else}}
+
+    <i class="ui active large loader"></i>
+
+    {{end}}
+
+</div>
+
+
+{{include "base_foot.html" .}}
+
+
+<div class="ui tiny modal">
+  <i class="close icon"></i>
+  <div class="header">
+    Confirm!
+  </div>
+  <div class="content">
+    <div class="ui container">
+
+      <div class="field" style="min-height:50px;overflow-y:auto">
+        <form class="ui form" action="" method="POST" id="modal_form">
+
+          <div class="description" id="modal_description">
+          </div>
+          <input type="hidden" name="status" value="" id="modal_input_status">
+
+          <div class="ui divider"></div>
+          <button class="ui primary right floated submit button" type="submit">Yes, Submit</button>
+
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script type="text/javascript">
+    $('.ui.dropdown').dropdown();
+
+    $('.modalbutton').on('click', function() {
+      var form_url = $(this).data("url");
+      var status = $(this).data("status");
+      console.log(form_url);
+      console.log(status);
+      $('#modal_form').attr('action', form_url);
+      $('#modal_description').text("Sure?");
+      $('#modal_input_status').val(status);
+      $('.ui.modal').modal({autofocus: false,}).modal('show');
+
+    });
+
+    $(document).ready(function() {
+      var jobtype = $("#jobtypeid").data("jobtype");
+      if (jobtype == "BUILD") {
+        var taskurl = $("#jobtypeid").data("taskurl");
+        $.ajax({
+          url: taskurl,
+          type: 'GET',
+          dataType: 'json',
+          success: function(res) {
+            var taskstatus = res.status;
+            $('.taskstatus1').text(taskstatus);
+            $('.taskoutput').text(res.output);
+            $('.taskstatus2').text(taskstatus);
+
+            if (taskstatus == 'running') {
+                // var focusposition = document.getElementById("taskstatusbuttom").scrollHeight;
+                var focusposition = document.getElementById("taskstatusbuttom").offsetTop;
+                window.scrollTo(0, focusposition);
+              // window.scrollTo(0, document.body.scrollHeight);
+            }
+
+            oldtaskstatus = "";
+            if (taskstatus != "success" && taskstatus != "failed") {
+              var timer = setInterval(function () {
+                  $.ajax({
+                    url: taskurl,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(res) {
+                      var taskstatus = res.status;
+                      $('.taskstatus1').text(taskstatus);
+                      $('.taskoutput').text(res.output);
+                      // $('.taskstatus2').html(taskstatus + ' <i class="spinner loading icon"></i>');
+                      if (oldtaskstatus == "") {
+                        $('#taskstatusbuttom').html(taskstatus + ' <i class="ui active inline tiny loader"></i>');
+                        oldtaskstatus = taskstatus;
+                      }
+                      if (taskstatus != oldtaskstatus) {
+                        $('#taskstatusbuttom').html(taskstatus + ' <i class="ui active inline tiny loader"></i>');
+                      }
+
+                      // console.log(taskstatus);
+                      if(taskstatus == "success" || taskstatus == "failed"){
+                          $('#taskstatusbuttom').html(taskstatus);
+                          $("#abort_btn").remove();
+                          clearInterval(timer);
+                      }
+                    }
+                  });
+              }, 1000);
+            } else {
+              // $("#abort_btn").remove();
+            }
+          }
+        });
+      }
+      if (jobtype === undefined) {
+        setTimeout(function() {
+            $.ajax({
+              url: "",
+              context: document.body,
+              success: function(s,x) {
+                  $(this).html(s);
+              }
+            });
+        }, 1000);
+      }
+    });
+
+    $("#up_btn").click(function() {
+      window.scrollTo(0, 0);
+    });
+
+    window.onscroll = function() {
+        if(window.scrollY > 500){
+          // document.getElementById('up_btn').style.display = 'block';
+          document.getElementById('up_btn').style.visibility='visible';
+        }
+        else{
+          document.getElementById('up_btn').style.visibility='hidden';
+        }
+    }
+
+</script>
+
+</body>
+</html>
