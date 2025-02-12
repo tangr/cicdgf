@@ -75,6 +75,10 @@
     $('#group_id').dropdown('set selected', pipeline_group);
     $('#agent_id').dropdown('set selected', pipeline_agent);
 
+    var textarea = document.getElementById("pipeline_body");
+    var formatted = JSON.stringify(JSON.parse(textarea.value), null, 4);
+    textarea.value = formatted;
+
 </script>
 
 
