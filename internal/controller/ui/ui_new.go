@@ -93,8 +93,11 @@ type CicdGetOneReq struct {
 type CicdBodyGetOneReq struct {
 	g.Meta `path:"/{id}/body" tags:"ui" method:"get" summary:"ui console index"`
 }
-type CicdBodyGetOneRes struct {
-	Body string `json:"body" dc:"pipeline body"`
+type CicdJobCreateReq struct {
+	g.Meta `path:"/{pipeline_id}/newjob" tags:"ui" method:"post" summary:"ui console index"`
+}
+type CicdJobGetOneReq struct {
+	g.Meta `path:"/{pipeline_id}/{:job_id}" tags:"ui" method:"get" summary:"ui console index"`
 }
 
 // type CicdGetListPkgsReq struct {
@@ -132,6 +135,8 @@ type IUiV1 interface {
 	CicdGetOne(ctx context.Context, req *CicdGetOneReq) (res *ghttp.Response, err error)
 	CicdBodyGetOne(ctx context.Context, req *CicdBodyGetOneReq) (res *ghttp.Response, err error)
 	// CicdGetListPkgs(ctx context.Context, req *CicdGetListPkgsReq) (res *ghttp.Response, err error)
+	CicdJobCreate(ctx context.Context, req *CicdJobCreateReq) (res *ghttp.Response, err error)
+	// CicdJobGetOne(ctx context.Context, req *CicdJobGetOneReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}

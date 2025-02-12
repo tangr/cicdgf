@@ -4,6 +4,7 @@ import (
 	"cicdgf/internal/dao"
 	"context"
 
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 )
@@ -18,11 +19,27 @@ type ListPipelines struct {
 }
 
 type PipelineDetail struct {
-	Pipeline_name string `json:"pipeline_name"`
-	Group_id      string `json:"group_id"`
-	Agent_id      string `json:"agent_id"`
-	Concurrency   string `json:"concurrency"`
-	Body          string `json:"body"`
+	Pipeline_name string       `json:"pipeline_name"`
+	Group_id      string       `json:"group_id"`
+	Agent_id      string       `json:"agent_id"`
+	Concurrency   string       `json:"concurrency"`
+	Body          PipelineBody `json:"body"`
+}
+
+type Script struct {
+	Args   string `json:"script_args"`
+	Script string `json:"script_name"`
+}
+
+type PipelineBody struct {
+	StageCI Script `json:"stageCI"`
+	StageCD Script `json:"stageCD"`
+}
+
+type JobScriptValue struct {
+	Body string            `json:"scriptBody"`
+	Envs map[string]string `json:"scriptEnvs"`
+	Args string            `json:"scriptArgs"`
 }
 
 func (s *pipelineService) GetListPipelines(ctx context.Context) (pipelines []ListPipelines, err error) {
@@ -72,12 +89,17 @@ func (s *pipelineService) GetOne(pipeline_id int) (*PipelineDetail, error) {
 		return nil, err
 	}
 
+	var pipelineBody PipelineBody
+	if err := gjson.DecodeTo(record["body"].String(), &pipelineBody); err != nil {
+		return nil, err
+	}
+
 	return &PipelineDetail{
 		Pipeline_name: record["pipeline_name"].String(),
 		Group_id:      record["group_id"].String(),
 		Agent_id:      record["agent_id"].String(),
 		Concurrency:   record["concurrency"].String(),
-		Body:          record["body"].String(),
+		Body:          pipelineBody,
 	}, nil
 }
 

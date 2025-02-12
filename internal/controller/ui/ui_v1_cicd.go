@@ -4,6 +4,7 @@ import (
 	"cicdgf/internal/service"
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -49,7 +50,7 @@ func (c *ControllerV1) CicdGetOne(ctx context.Context, req *CicdGetOneReq) (resp
 	err = r.Response.WriteTpl("cicd/show.html", g.Map{
 		"url":           "/" + fmt.Sprint(pipeline_id),
 		"body_url":      "/" + fmt.Sprint(pipeline_id) + "/body",
-		"newJobUrl":     "/v1/" + fmt.Sprint(pipeline_id) + "/newjob",
+		"newJobUrl":     "/" + fmt.Sprint(pipeline_id) + "/newjob",
 		"pkgurl":        "/v1/" + fmt.Sprint(pipeline_id) + "/pkgs",
 		"pipeline_name": pipeline.Pipeline_name,
 		"pipeline_id":   pipeline_id,
@@ -83,4 +84,32 @@ func (c *ControllerV1) CicdBodyGetOne(ctx context.Context, req *CicdBodyGetOneRe
 	r.Response.WriteExit(pipeline_body)
 	return nil, nil
 
+}
+
+func (c *ControllerV1) CicdJobCreate(ctx context.Context, req *CicdJobCreateReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	var pipeline_id int = r.Get("pipeline_id").Int()
+	// if !service.CheckAuthor(r.Context(), pipeline_id) {
+	// 	r.Response.RedirectTo(UrlPrefix + "/forbidden")
+	// }
+	// var username string = service.Session.GetUser(r.Context()).Email
+	var username string = "tangshoubin"
+	envs := r.GetFormMap()
+	job_id, err := service.Cicd.CreateJob(ctx, pipeline_id, envs, username)
+	g.Log().Debug(ctx, "CicdJobCreate job_id: ", job_id)
+	if err != nil {
+		g.Log().Debug(ctx, "CicdJobCreate err: ", err)
+		return nil, err
+	}
+
+	r.Response.RedirectTo("/" + fmt.Sprint(pipeline_id) + "/" + strconv.FormatInt(job_id, 10))
+
+	// var agent_name string = r.Get("agent_name").String()
+	// var agent_ipaddr string = r.Get("agent_ipaddr").String()
+	// agent_id := service.Agent.New(agent_name, agent_ipaddr)
+
+	// r.Response.RedirectTo("/agents/"+fmt.Sprint(agent_id), 303)
+
+	return nil, err
 }

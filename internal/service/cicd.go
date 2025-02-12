@@ -4,9 +4,12 @@ import (
 	"cicdgf/internal/dao"
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gpage"
 )
 
@@ -72,4 +75,89 @@ func (s *cicdService) PageContent(page *gpage.Page) string {
 	pageStr += fmt.Sprint(page.CurrentPage)
 	pageStr += page.NextPage()
 	return pageStr
+}
+
+func (s *cicdService) CreateJob(ctx context.Context, pipeline_id int, envs map[string]interface{}, username string) (int64, error) {
+	var script_args string
+	var jobtype string
+	var job_envs map[string]string = Comm.ParseEnvs(envs)
+	var comment string = job_envs["COMMENT"]
+	var job_type string = job_envs["JOBTYPE"]
+
+	g.Log().Debug(ctx, "CreateJob pipeline_id: ", pipeline_id)
+	pipeline, err := Pipeline.GetOne(pipeline_id)
+	g.Log().Debug(ctx, "CreateJob pipeline: ", pipeline)
+	g.Log().Debug(ctx, "CreateJob err: ", err)
+	if err != nil {
+		return 0, nil
+	}
+
+	pipeline_body := pipeline.Body
+	pipeline_name := pipeline.Pipeline_name
+	agent_id := pipeline.Agent_id
+	concurrency := pipeline.Concurrency
+
+	// pipeline_name, agent_id, concurrency, pipeline_body := Pipeline.GetOne(pipeline_id)
+	if job_type == "BUILD" {
+		jobtype = job_type
+		// script_name := pipeline_body.StageCI.Script
+		script_args = pipeline_body.StageCI.Args
+		job_envs["PKGRDM"] = Comm.RandSeq(20)
+	} else if job_type == "DEPLOY" {
+		type JobStatus struct {
+			Id        int64  `json:"job_id"`
+			JobStatus string `json:"job_status"`
+		}
+		var last_job_status JobStatus
+		last_job := g.Map{"pipeline_id": pipeline_id, "job_type": "DEPLOY"}
+		err := dao.CicdJob.
+			Ctx(ctx).
+			Fields("id,job_status").
+			Where(last_job).
+			OrderDesc("id").
+			Limit(1).
+			Scan(&last_job_status)
+		if err != nil {
+			g.Log().Error(ctx, err)
+		}
+		if last_job_status.JobStatus != "success" && last_job_status.JobStatus != "failed" && last_job_status.Id != 0 {
+			return last_job_status.Id, nil
+		}
+		jobtype = job_type
+		// script_name := pipeline_body.StageCD.Script
+		script_args = pipeline_body.StageCD.Args
+	} else {
+		g.Log().Errorf(ctx, "unsupported job_type: %s", job_type)
+	}
+	job_envs["PIPELINEID"] = fmt.Sprint(pipeline_id)
+	job_envs["PIPELINENAME"] = strings.Split(pipeline_name, ":")[0]
+	job_envs["USERNAME"] = username
+	script_body := "Script.GetScriptBody(script_name)"
+	new_jobscript := new(JobScriptValue)
+	new_jobscript.Envs = job_envs
+	new_jobscript.Args = script_args
+	new_jobscript.Body = script_body
+
+	new_job := g.Map{
+		"pipeline_id": pipeline_id,
+		"agent_id":    agent_id,
+		"concurrency": concurrency,
+		"job_type":    jobtype,
+		"job_status":  "pending",
+		"script":      new_jobscript,
+		"comment":     comment,
+		"author":      username,
+		"created_at":  gtime.Now().Timestamp(),
+	}
+	result, err := dao.CicdJob.Ctx(ctx).
+		Data(new_job).
+		Save()
+	if err != nil {
+		g.Log().Error(ctx, err)
+	}
+	job_id, err := result.LastInsertId()
+	if err != nil {
+		g.Log().Error(ctx, err)
+	}
+	return job_id, nil
 }
