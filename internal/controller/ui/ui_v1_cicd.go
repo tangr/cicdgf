@@ -4,6 +4,7 @@ import (
 	"cicdgf/internal/service"
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -169,6 +170,30 @@ func (c *ControllerV1) CicdJobGetOne(ctx context.Context, req *CicdJobGetOneReq)
 	}
 
 	r.Response.WriteExit(pipeline_body)
+	return nil, nil
+
+}
+
+func (c *ControllerV1) CicdLogGetOne(ctx context.Context, req *CicdLogGetOneReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	var pipeline_id int = r.Get("pipeline_id").Int()
+	// if !service.CheckAuthor(r.Context(), pipeline_id) {
+	// 	r.Response.WriteStatus(http.StatusForbidden)
+	// }
+	var log_id int = r.Get("task_id").Int()
+	output, err := service.Cicd.GetOneLog(ctx, pipeline_id, log_id)
+	if err != nil {
+		return nil, err
+	}
+
+	if output == nil {
+		r.Response.WriteStatus(http.StatusNotFound)
+		return nil, nil
+	}
+
+	r.Response.WriteExit(output.Output)
+
 	return nil, nil
 
 }

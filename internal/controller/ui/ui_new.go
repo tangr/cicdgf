@@ -99,6 +99,9 @@ type CicdJobCreateReq struct {
 type CicdJobGetOneReq struct {
 	g.Meta `path:"/{pipeline_id}/{job_id}" tags:"ui" method:"get" summary:"ui console index"`
 }
+type CicdLogGetOneReq struct {
+	g.Meta `path:"/{pipeline_id}/{task_id}/log" tags:"ui" method:"get" summary:"ui console index"`
+}
 
 // type CicdGetListPkgsReq struct {
 // 	g.Meta `path:"/{id}/pkgs" tags:"ui" method:"get" summary:"ui console index"`
@@ -137,6 +140,7 @@ type IUiV1 interface {
 	// CicdGetListPkgs(ctx context.Context, req *CicdGetListPkgsReq) (res *ghttp.Response, err error)
 	CicdJobCreate(ctx context.Context, req *CicdJobCreateReq) (res *ghttp.Response, err error)
 	CicdJobGetOne(ctx context.Context, req *CicdJobGetOneReq) (res *ghttp.Response, err error)
+	CicdLogGetOne(ctx context.Context, req *CicdLogGetOneReq) (res *ghttp.Response, err error)
 }
 
 type ControllerV1 struct{}

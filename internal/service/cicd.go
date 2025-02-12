@@ -46,6 +46,12 @@ type JobDetail struct {
 	JobStatus   string `json:"job_status"`
 }
 
+type LogDetail struct {
+	Task_status string `json:"status"`
+	Updated_at  int    `json:"updated_at"`
+	Output      string `json:"output"`
+}
+
 func (a *cicdService) GetListCicd(r *ghttp.Request) {
 	// group_ids := service.GetUserGroupIds(r.Context())
 	// pipelines := service.Cicd.ListCicd(group_ids)
@@ -247,4 +253,19 @@ func (s *cicdService) GetOneJob(job_id int) (*JobDetail, error) {
 		JobType:     record["job_type"].String(),
 		JobStatus:   record["job_status"].String(),
 	}, nil
+}
+
+func (s *cicdService) GetOneLog(ctx context.Context, pipeline_id int, log_id int) (*LogDetail, error) {
+	output := (*LogDetail)(nil)
+	// if !s.CheckTaskid(pipeline_id, log_id) {
+	// 	return output
+	// }
+	err := dao.CicdLog.Ctx(ctx).
+		Fields("task_status,updated_at,output").
+		Where(g.Map{"id": log_id}).
+		Scan(&output)
+	if err != nil {
+		g.Log().Error(ctx, err)
+	}
+	return output, nil
 }
