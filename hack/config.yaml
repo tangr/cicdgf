@@ -5,7 +5,7 @@ gfcli:
     dao:
       - link: "mysql:yax_ops_dt2_cicdgf:ZS9ArFJznAbObCf@tcp(yax-ops-dt2-mysql0.yax.tech:3306)/yax_ops_dt2_cicdgf"
         descriptionTag: true
-        tables: "cicd_user,cicd_group,cicd_agent,cicd_pipeline,cicd_job"
+        tables: "cicd_user,cicd_group,cicd_agent,cicd_pipeline,cicd_job,cicd_log"
 
   docker:
     build: "-a amd64 -s linux -p temp -ew"
