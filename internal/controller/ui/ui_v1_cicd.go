@@ -48,7 +48,7 @@ func (c *ControllerV1) CicdGetOne(ctx context.Context, req *CicdGetOneReq) (resp
 
 	err = r.Response.WriteTpl("cicd/show.html", g.Map{
 		"url":           "/" + fmt.Sprint(pipeline_id),
-		"apiurl":        "/v1/" + fmt.Sprint(pipeline_id) + "/body",
+		"body_url":      "/" + fmt.Sprint(pipeline_id) + "/body",
 		"newJobUrl":     "/v1/" + fmt.Sprint(pipeline_id) + "/newjob",
 		"pkgurl":        "/v1/" + fmt.Sprint(pipeline_id) + "/pkgs",
 		"pipeline_name": pipeline.Pipeline_name,
@@ -65,4 +65,22 @@ func (c *ControllerV1) CicdGetOne(ctx context.Context, req *CicdGetOneReq) (resp
 		// "groups": groups,
 	})
 	return nil, err
+}
+
+func (c *ControllerV1) CicdBodyGetOne(ctx context.Context, req *CicdBodyGetOneReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	var pipeline_id int = r.Get("id").Int()
+	// if !service.CheckAuthor(r.Context(), pipeline_id) {
+	// 	r.Response.RedirectTo(UrlPrefix + "/forbidden")
+	// }
+
+	pipeline_body, err := service.Pipeline.GetOnebody(pipeline_id)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Response.WriteExit(pipeline_body)
+	return nil, nil
+
 }

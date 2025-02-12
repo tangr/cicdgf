@@ -90,12 +90,16 @@ type CicdGetListReq struct {
 type CicdGetOneReq struct {
 	g.Meta `path:"/{id}" tags:"ui" method:"get" summary:"ui console index"`
 }
-type CicdGetOneBodyReq struct {
+type CicdBodyGetOneReq struct {
 	g.Meta `path:"/{id}/body" tags:"ui" method:"get" summary:"ui console index"`
 }
-type CicdGetListPkgsReq struct {
-	g.Meta `path:"/{id}/pkgs" tags:"ui" method:"get" summary:"ui console index"`
+type CicdBodyGetOneRes struct {
+	Body string `json:"body" dc:"pipeline body"`
 }
+
+// type CicdGetListPkgsReq struct {
+// 	g.Meta `path:"/{id}/pkgs" tags:"ui" method:"get" summary:"ui console index"`
+// }
 
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
@@ -126,7 +130,7 @@ type IUiV1 interface {
 
 	CicdGetList(ctx context.Context, req *CicdGetListReq) (res *ghttp.Response, err error)
 	CicdGetOne(ctx context.Context, req *CicdGetOneReq) (res *ghttp.Response, err error)
-	// CicdGetOneBody(ctx context.Context, req *CicdGetOneBodyReq) (res *ghttp.Response, err error)
+	CicdBodyGetOne(ctx context.Context, req *CicdBodyGetOneReq) (res *ghttp.Response, err error)
 	// CicdGetListPkgs(ctx context.Context, req *CicdGetListPkgsReq) (res *ghttp.Response, err error)
 }
 

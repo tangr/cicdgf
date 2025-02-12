@@ -102,3 +102,19 @@ func (s *pipelineService) Update(pipeline_id string, group_id string, agent_id s
 
 	return pipeline_id
 }
+
+func (s *pipelineService) GetOnebody(pipeline_id int) (string, error) {
+	ctx := context.Background()
+
+	record, err := dao.CicdPipeline.Ctx(ctx).
+		Fields("body").
+		Where("id=?", pipeline_id).
+		One()
+
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return "", err
+	}
+
+	return record["body"].String(), nil
+}
