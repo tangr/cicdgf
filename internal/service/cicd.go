@@ -28,6 +28,24 @@ type ListJobs struct {
 	Created_at  int    `json:"created_at"`
 }
 
+type ListTasks struct {
+	Id          int    `json:"log_id"`
+	Job_id      int    `json:"job_id"`
+	Job_type    string `json:"job_type"`
+	Agent_id    int    `json:"agent_id"`
+	Pipeline_id int    `json:"pipeline_id"`
+	Task_status string `json:"task_status"`
+	Ipaddr      string `json:"ipaddr"`
+	Actived     int    `json:"Actived"`
+	Updated_at  int    `json:"updated_at"`
+}
+
+type JobDetail struct {
+	Concurrency int    `json:"concurrency"`
+	JobType     string `json:"job_type"`
+	JobStatus   string `json:"job_status"`
+}
+
 func (a *cicdService) GetListCicd(r *ghttp.Request) {
 	// group_ids := service.GetUserGroupIds(r.Context())
 	// pipelines := service.Cicd.ListCicd(group_ids)
@@ -160,4 +178,73 @@ func (s *cicdService) CreateJob(ctx context.Context, pipeline_id int, envs map[s
 		g.Log().Error(ctx, err)
 	}
 	return job_id, nil
+}
+
+func (s *cicdService) CheckJobid(ctx context.Context, pipeline_id int, job_id int) bool {
+	num, err := dao.CicdJob.Ctx(ctx).
+		Where(g.Map{"pipeline_id": pipeline_id, "id": job_id}).
+		Count()
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return false
+	}
+	if num < 1 {
+		return false
+	}
+	return true
+}
+
+func (s *cicdService) GetListJobTasks(ctx context.Context, pipeline_id int, job_id int) []ListTasks {
+	var agentStatusMap map[string]int
+	tasks := ([]ListTasks)(nil)
+	if !s.CheckJobid(ctx, pipeline_id, job_id) {
+		return tasks
+	}
+	err := dao.CicdLog.Ctx(ctx).
+		Fields("id,job_id,job_type,agent_id,pipeline_id,task_status,ipaddr,updated_at").
+		Order("id desc").
+		Where(g.Map{"job_id": job_id}).
+		Scan(&tasks)
+	if err != nil {
+		g.Log().Error(ctx, err)
+	}
+	// // var agentStatus string
+	// status_url := fmt.Sprint(WsServerAPI, pipeline_id, "/", job_id, "/status")
+	// r, err := g.Client().Get(status_url)
+	// if err != nil {
+	// 	g.Log().Error(err)
+	// } else {
+	// 	defer r.Close()
+	// }
+	// agentStatus := r.ReadAllString()
+	// json.Unmarshal([]byte(agentStatus), &agentStatusMap)
+	for idx, v := range tasks {
+		if v.Job_type == "BUILD" {
+			mapk := fmt.Sprint("CI-", v.Agent_id, "-", v.Ipaddr)
+			tasks[idx].Actived = agentStatusMap[mapk]
+		} else {
+			mapk := fmt.Sprint("CD-", v.Pipeline_id, "-", v.Ipaddr)
+			tasks[idx].Actived = agentStatusMap[mapk]
+		}
+	}
+	return tasks
+}
+
+func (s *cicdService) GetOneJob(job_id int) (*JobDetail, error) {
+	ctx := context.Background()
+
+	record, err := dao.CicdJob.Ctx(ctx).
+		Fields("concurrency,job_type,job_status").
+		Where("id=?", job_id).
+		One()
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return nil, err
+	}
+
+	return &JobDetail{
+		Concurrency: record["concurrency"].Int(),
+		JobType:     record["job_type"].String(),
+		JobStatus:   record["job_status"].String(),
+	}, nil
 }

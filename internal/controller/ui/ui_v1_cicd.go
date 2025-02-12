@@ -113,3 +113,62 @@ func (c *ControllerV1) CicdJobCreate(ctx context.Context, req *CicdJobCreateReq)
 
 	return nil, err
 }
+
+func (c *ControllerV1) CicdJobGetOne(ctx context.Context, req *CicdJobGetOneReq) (response *ghttp.Response, err error) {
+	r := g.RequestFromCtx(ctx)
+
+	// var pipeline_id int = r.Get("pipeline_id").Int()
+	// var job_id int = r.Get("job_id").Int()
+	// // if !service.CheckAuthor(r.Context(), pipeline_id) {
+	// // 	r.Response.RedirectTo(UrlPrefix + "/forbidden")
+	// // }
+
+	var pipeline_id int = r.Get("pipeline_id").Int()
+	// if !service.CheckAuthor(r.Context(), pipeline_id) {
+	// 	r.Response.RedirectTo("/forbidden")
+	// }
+	var job_id int = r.Get("job_id").Int()
+
+	tasks := service.Cicd.GetListJobTasks(ctx, pipeline_id, job_id)
+	pipeline, err := service.Pipeline.GetOne(pipeline_id)
+	if err != nil {
+		g.Log().Debug(ctx, "CicdJobCreate err: ", err)
+		return nil, err
+	}
+
+	pipeline_name := pipeline.Pipeline_name
+	job, err := service.Cicd.GetOneJob(job_id)
+	if err != nil {
+		g.Log().Debug(ctx, "CicdJobCreate err: ", err)
+		return nil, err
+	}
+	concurrency, job_type, job_status := job.Concurrency, job.JobType, job.JobStatus
+	params := g.Map{
+		"url":           "/" + fmt.Sprint(pipeline_id) + "/",
+		"apiurl":        "/v1/" + fmt.Sprint(pipeline_id, "/", job_id),
+		"pipeline_name": pipeline_name,
+		"pipeline_id":   pipeline_id,
+		"job_id":        job_id,
+		"concurrency":   concurrency,
+		"job_type":      job_type,
+		"job_status":    job_status,
+		"tasks":         tasks,
+		"taskurl":       "/" + fmt.Sprint(pipeline_id) + "/",
+	}
+	if job_type == "BUILD" {
+		// r.Response.WriteExit(params)
+		r.Response.WriteTpl("cicd/job_build.html", params)
+	} else {
+		params["progressurl"] = "/" + fmt.Sprint(pipeline_id, "/", job_id) + "/progress"
+		r.Response.WriteTpl("cicd/job_deploy.html", params)
+	}
+
+	pipeline_body, err := service.Pipeline.GetOnebody(pipeline_id)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Response.WriteExit(pipeline_body)
+	return nil, nil
+
+}
