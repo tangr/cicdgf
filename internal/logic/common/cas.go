@@ -36,13 +36,22 @@ type CasConfig struct {
 	LogoutURL    string `json:"logoutURL"`
 }
 
+type AdminConfig struct {
+	AuthorEnable bool     `json:"author_enable"`
+	AdminUsers   []string `json:"admin_users"`
+}
+
 var (
-	Cfg *CasConfig
+	Cfg      *CasConfig
+	AdminCfg *AdminConfig
 )
 
 func init() {
 	ctx := gctx.New()
 	if err := g.Cfg().MustGet(ctx, "cas-sso").Scan(&Cfg); err != nil {
+		panic(err)
+	}
+	if err := g.Cfg().MustGet(ctx, "admin").Scan(&AdminCfg); err != nil {
 		panic(err)
 	}
 }
