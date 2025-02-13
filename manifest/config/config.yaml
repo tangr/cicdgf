@@ -16,7 +16,7 @@ cas-sso:
   logout-url: "/logout"
 
 admin:
-  author_enable: false
+  author_enable: true
   admin_users:
     - "tangshoubin"
 
