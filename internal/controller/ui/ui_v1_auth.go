@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
@@ -39,7 +40,16 @@ func (c *ControllerV1) AuthCallback(ctx context.Context, req *AuthCallbackReq) (
 		return
 	}
 
-	r.Session.Set("user", casResp.Success.User)
+	adminUsers := common.AdminCfg.AdminUsers
+	username := casResp.Success.User
+	arrayUsers := garray.NewStrArrayFrom(adminUsers)
+	if arrayUsers.Contains(username) {
+		r.Session.Set("IsAdmin", true)
+	} else {
+		r.Session.Set("IsAdmin", false)
+	}
+
+	r.Session.Set("user", username)
 	r.Session.Set("ticket", ticket)
 	r.Session.Set("last_validate_time", time.Now())
 
