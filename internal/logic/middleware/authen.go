@@ -10,7 +10,7 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
-func AuthMiddleware(r *ghttp.Request) {
+func AuthenMiddleware(r *ghttp.Request) {
 	skipPaths := map[string]bool{
 		"/login":    true,
 		"/callback": true,

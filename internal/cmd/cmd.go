@@ -30,7 +30,7 @@ var (
 
 			s.Group("/", func(group *ghttp.RouterGroup) {
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
-				group.Middleware(middleware.AuthMiddleware)
+				group.Middleware(middleware.AuthenMiddleware)
 				group.Bind(
 					ui.NewV1(),
 				)
