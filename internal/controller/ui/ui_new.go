@@ -15,6 +15,17 @@ type UiReq struct {
 	g.Meta `path:"/ui" tags:"ui" method:"get" summary:"ui console index"`
 }
 
+// auth
+type AuthLoginReq struct {
+	g.Meta `path:"/login" tags:"ui" method:"get" summary:"ui console index"`
+}
+type AuthCallbackReq struct {
+	g.Meta `path:"/callback" tags:"ui" method:"get" summary:"ui console index"`
+}
+type AuthLogoutReq struct {
+	g.Meta `path:"/logout" tags:"ui" method:"get" summary:"ui console index"`
+}
+
 // groups
 type GroupGetListReq struct {
 	g.Meta `path:"/groups" tags:"ui" method:"get" summary:"ui console index"`
@@ -109,6 +120,10 @@ type CicdLogGetOneReq struct {
 
 type IUiV1 interface {
 	Ui(ctx context.Context, req *UiReq) (res *ghttp.Response, err error)
+
+	AuthLogin(ctx context.Context, req *AuthLoginReq) (res *ghttp.Response, err error)
+	AuthCallback(ctx context.Context, req *AuthCallbackReq) (res *ghttp.Response, err error)
+	AuthLogout(ctx context.Context, req *AuthLogoutReq) (res *ghttp.Response, err error)
 
 	GroupGetList(ctx context.Context, req *GroupGetListReq) (res *ghttp.Response, err error)
 	GroupNew(ctx context.Context, req *GroupNewReq) (res *ghttp.Response, err error)
