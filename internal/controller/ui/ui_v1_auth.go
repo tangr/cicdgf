@@ -14,6 +14,19 @@ import (
 func (c *ControllerV1) AuthLogin(ctx context.Context, req *AuthLoginReq) (response *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
+	returnUrl := r.GetQuery("returnUrl").String()
+	if returnUrl == "" {
+		returnUrl = r.GetReferer()
+		if returnUrl == "" {
+			returnUrl = "/dashboard"
+		}
+	}
+
+	// 将 returnUrl 保存到 session
+	if err := r.Session.Set("returnUrl", returnUrl); err != nil {
+		g.Log().Error(ctx, "Set session returnUrl error:", err)
+	}
+
 	redirectURL := fmt.Sprintf("%s%s?service=%s/callback",
 		common.Cfg.CasServerURL,
 		common.Cfg.LoginURL,
@@ -53,7 +66,23 @@ func (c *ControllerV1) AuthCallback(ctx context.Context, req *AuthCallbackReq) (
 	r.Session.Set("ticket", ticket)
 	r.Session.Set("last_validate_time", time.Now())
 
-	r.Response.RedirectTo("/dashboard")
+	// 正确处理 Session.Get() 返回值
+	returnUrlVar, err := r.Session.Get("returnUrl")
+	var returnUrl string
+	if err != nil {
+		returnUrl = "/dashboard"
+	} else {
+		returnUrl = returnUrlVar.String()
+	}
+
+	// 使用后删除
+	r.Session.Remove("returnUrl")
+
+	if returnUrl != "" {
+		r.Response.RedirectTo(returnUrl)
+	} else {
+		r.Response.RedirectTo("/dashboard")
+	}
 
 	return nil, err
 }

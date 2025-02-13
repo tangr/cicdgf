@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 
 	"cicdgf/internal/logic/common"
@@ -22,24 +23,31 @@ func AuthMiddleware(r *ghttp.Request) {
 		return
 	}
 
-	user := r.Session.MustGet("user").String()
-	ticket := r.Session.MustGet("ticket").String()
+	userVar, _ := r.Session.Get("user")
+	ticketVar, _ := r.Session.Get("ticket")
 
-	if user == "" || ticket == "" {
-		r.Response.RedirectTo("/login")
+	if userVar == nil || ticketVar == nil {
+		currentUrl := r.URL.String()
+		loginUrl := fmt.Sprintf("/login?returnUrl=%s", url.QueryEscape(currentUrl))
+		r.Response.RedirectTo(loginUrl)
 		return
 	}
 
-	lastValidateTime := r.Session.MustGet("last_validate_time").Time()
-	if time.Since(lastValidateTime) > 500*time.Minute {
-		callbackURL := fmt.Sprintf("%s/callback", common.Cfg.ServiceURL)
-		_, err := common.ValidateSSOSession(r.Context(), ticket, callbackURL)
-		if err != nil {
-			r.Session.RemoveAll()
-			r.Response.RedirectTo("/login")
-			return
+	lastValidateTimeVar, _ := r.Session.Get("last_validate_time")
+	if lastValidateTimeVar != nil {
+		lastValidateTime := lastValidateTimeVar.Time()
+		if time.Since(lastValidateTime) > 500*time.Minute {
+			callbackURL := fmt.Sprintf("%s/callback", common.Cfg.ServiceURL)
+			_, err := common.ValidateSSOSession(r.Context(), ticketVar.String(), callbackURL)
+			if err != nil {
+				r.Session.RemoveAll()
+				currentUrl := r.URL.String()
+				loginUrl := fmt.Sprintf("/login?returnUrl=%s", url.QueryEscape(currentUrl))
+				r.Response.RedirectTo(loginUrl)
+				return
+			}
+			r.Session.Set("last_validate_time", time.Now())
 		}
-		r.Session.Set("last_validate_time", time.Now())
 	}
 
 	r.Middleware.Next()
