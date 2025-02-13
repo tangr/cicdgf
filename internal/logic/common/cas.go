@@ -71,7 +71,6 @@ func ValidateSSOSession(ctx context.Context, ticket string, service string) (*Ca
 	}
 	defer res.Close()
 
-	// 解析CAS响应
 	var casResp CasResponse
 	if err := xml.Unmarshal(res.ReadAll(), &casResp); err != nil {
 		g.Log().Error(ctx, "Parse SSO validation response error:", err)
