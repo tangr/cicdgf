@@ -3,7 +3,6 @@ package middleware
 import (
 	"cicdgf/internal/logic/common"
 	"cicdgf/internal/service"
-	"context"
 	"fmt"
 	"strconv"
 
@@ -20,7 +19,7 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func AuthorMiddleware(ctx context.Context, r *ghttp.Request) {
+func AuthorMiddleware(r *ghttp.Request) {
 	// 获取pipeline_id参数
 	pipelineId := r.Get("pipeline_id").Int()
 
