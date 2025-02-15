@@ -2,6 +2,7 @@ package ui
 
 import (
 	"cicdgf/internal/logic/common"
+	"cicdgf/internal/service"
 	"context"
 	"fmt"
 	"time"
@@ -62,7 +63,14 @@ func (c *ControllerV1) AuthCallback(ctx context.Context, req *AuthCallbackReq) (
 		r.Session.Set("IsAdmin", false)
 	}
 
+	userid, err := service.User.GetOneUsername(username)
+	if err != nil {
+		r.Response.Write("CAS validation failed")
+		return
+	}
+
 	r.Session.Set("user", username)
+	r.Session.Set("userid", userid)
 	r.Session.Set("ticket", ticket)
 	r.Session.Set("last_validate_time", time.Now())
 
