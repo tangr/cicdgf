@@ -20,36 +20,6 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-// func AuthorMiddleware2(ctx context.Context, r *ghttp.Request) {
-// 	// 获取pipeline_id参数
-// 	pipelineId := r.Get("pipeline_id").Int()
-
-// 	// 检查权限
-// 	if v := r.GetCtxVar(); v != nil {
-// 		user_id := int(v.User.Id)
-// 		group_ids_user, err := service.User.GetListGroupId(user_id)
-// 		if err != nil {
-// 			return
-// 		}
-
-// 		group_id_pipeline, err := service.Pipeline.GetOneGroupId(pipelineId)
-// 		if err != nil {
-// 			return
-// 		}
-
-// 		if stringInSlice(fmt.Sprint(group_id_pipeline), group_ids_user) {
-// 			r.Middleware.Next()
-// 			return
-// 		}
-// 	}
-
-// 	// 没有权限，返回错误
-// 	r.Response.WriteJson(g.Map{
-// 		"code": 403,
-// 		"msg":  "No permission to access this pipeline",
-// 	})
-// }
-
 func AuthorMiddleware(ctx context.Context, r *ghttp.Request) {
 	// 获取pipeline_id参数
 	pipelineId := r.Get("pipeline_id").Int()
