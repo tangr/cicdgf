@@ -94,3 +94,38 @@ func (s *userService) Update(userid string, username string, groups []string) st
 
 	return userid
 }
+
+func (s *userService) GetListGroupId(user_id int) ([]string, error) {
+	ctx := context.Background()
+
+	record, err := dao.CicdUser.Ctx(ctx).
+		Fields("group_id").
+		Where("id=?", user_id).
+		One()
+
+	if err != nil {
+		if g.IsNil(record) {
+			return make([]string, 0), nil
+		}
+		g.Log().Error(ctx, err)
+		return make([]string, 0), err
+	}
+
+	return record["group_id"].Strings(), nil
+}
+
+func (s *userService) GetOneUsername(user_name string) (int, error) {
+	ctx := context.Background()
+
+	record, err := dao.CicdUser.Ctx(ctx).
+		Fields("id").
+		Where("username=?", user_name).
+		One()
+
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return 0, err
+	}
+
+	return record["id"].Int(), nil
+}

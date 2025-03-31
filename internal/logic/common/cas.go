@@ -41,6 +41,13 @@ type AdminConfig struct {
 	AdminUsers   []string `json:"admin_users"`
 }
 
+type ContextKey string
+
+const (
+	UsernameKey ContextKey = "username"
+	UseridKey   ContextKey = "userid"
+)
+
 var (
 	Cfg      *CasConfig
 	AdminCfg *AdminConfig

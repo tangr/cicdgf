@@ -140,3 +140,19 @@ func (s *pipelineService) GetOnebody(pipeline_id int) (string, error) {
 
 	return record["body"].String(), nil
 }
+
+func (s *pipelineService) GetOneGroupId(pipeline_id int) (string, error) {
+	ctx := context.Background()
+
+	record, err := dao.CicdPipeline.Ctx(ctx).
+		Fields("group_id").
+		Where("id=?", pipeline_id).
+		One()
+
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return "", err
+	}
+
+	return record["group_id"].String(), nil
+}

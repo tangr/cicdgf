@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"time"
@@ -11,6 +12,8 @@ import (
 )
 
 func AuthenMiddleware(r *ghttp.Request) {
+	ctx := r.Context()
+
 	skipPaths := map[string]bool{
 		"/login":    true,
 		"/callback": true,
@@ -23,10 +26,15 @@ func AuthenMiddleware(r *ghttp.Request) {
 		return
 	}
 
-	userVar, _ := r.Session.Get("user")
+	usernameVar, _ := r.Session.Get("user")
+	useridVar, _ := r.Session.Get("userid")
 	ticketVar, _ := r.Session.Get("ticket")
 
-	if userVar == nil || ticketVar == nil {
+	ctx = context.WithValue(ctx, common.UsernameKey, usernameVar)
+	ctx = context.WithValue(ctx, common.UseridKey, useridVar)
+	r.SetCtx(ctx)
+
+	if usernameVar == nil || ticketVar == nil {
 		currentUrl := r.URL.String()
 		loginUrl := fmt.Sprintf("/login?returnUrl=%s", url.QueryEscape(currentUrl))
 		r.Response.RedirectTo(loginUrl)
