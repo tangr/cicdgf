@@ -8,6 +8,7 @@ import (
 	"github.com/gogf/gf/v2/os/gcmd"
 
 	"cicdgf/internal/controller/hello"
+	"cicdgf/internal/controller/notify"
 	"cicdgf/internal/controller/ui"
 	"cicdgf/internal/controller/user"
 	"cicdgf/internal/logic/middleware"
@@ -50,6 +51,13 @@ var (
 					r.Response.Writef("Welcome %s! <a href='/logout'>Logout</a>", user)
 				})
 
+			})
+
+			s.Group("/notifys", func(group *ghttp.RouterGroup) {
+				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Bind(
+					new(notify.Notify),
+				)
 			})
 
 			s.Run()
