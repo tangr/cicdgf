@@ -69,7 +69,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	}
 	g.Log().Infof(ctx, "clientId: %s", clientId)
 
-	if len(req.Items) == 0 {
+	if len(req.Items) > 0 {
 		for i, item := range req.Items {
 			g.Log().Infof(ctx, "Processing item #%d: Agent=%s(%d), JobId=%d, JobStatus=%s",
 				i, item.AgentName, item.AgentId, item.JobId, item.JobStatus)
@@ -119,16 +119,10 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 
 	case <-timeoutCtx.Done():
 		// 超时，返回空数据
-		response := g.Map{
-			"code":    0,
-			"message": "No new notifications within timeout period",
-			"data": g.Map{
-				"items":          []NotifyItem{},
-				"processedCount": 0,
-			},
-		}
+
+		g.Log().Infof(ctx, "status code: %d", 304)
+
 		r.Response.WriteStatus(304)
-		r.Response.WriteJson(response)
 	}
 
 	return
