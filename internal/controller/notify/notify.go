@@ -76,8 +76,9 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 				"processedCount": len(req.Items),
 			},
 		}
-
+		r.Response.WriteStatus(200)
 		r.Response.WriteJson(response)
+
 		return
 	}
 
@@ -121,6 +122,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 				"processedCount": len(items),
 			},
 		}
+		r.Response.WriteStatus(200)
 		r.Response.WriteJson(response)
 
 	case <-timeoutCtx.Done():
@@ -133,6 +135,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 				"processedCount": 0,
 			},
 		}
+		r.Response.WriteStatus(304)
 		r.Response.WriteJson(response)
 	}
 
