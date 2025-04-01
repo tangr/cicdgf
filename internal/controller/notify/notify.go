@@ -62,33 +62,25 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		timeout = req.TimeoutSec
 	}
 
-	// 如果请求中包含通知项，则立即处理
-	if len(req.Items) == 0 {
-		for i, item := range req.Items {
-			g.Log().Infof(ctx, "Processing item #%d: Agent=%s(%d), JobId=%d, JobStatus=%s",
-				i, item.AgentName, item.AgentId, item.JobId, item.JobStatus)
-		}
-
-		response := g.Map{
-			"code":    0,
-			"message": "Notifications processed successfully",
-			"data": g.Map{
-				"processedCount": len(req.Items),
-			},
-		}
-		r.Response.WriteStatus(200)
-		r.Response.WriteJson(response)
-
-		return
-	}
-
-	// 以下是Long Polling实现部分
 	// 从请求中获取客户端ID，如果没有则使用IP地址作为ID
 	clientId := r.GetHeader("X-Client-ID")
 	if clientId == "" {
 		clientId = r.GetClientIp()
 	}
 	g.Log().Infof(ctx, "clientId: %s", clientId)
+
+	if len(req.Items) == 0 {
+		for i, item := range req.Items {
+			g.Log().Infof(ctx, "Processing item #%d: Agent=%s(%d), JobId=%d, JobStatus=%s",
+				i, item.AgentName, item.AgentId, item.JobId, item.JobStatus)
+
+		}
+
+		AddNotificationItems(clientId, req.Items)
+
+	}
+
+	// 以下是Long Polling实现部分
 
 	// 创建通知通道
 	notificationChan := make(chan []NotifyItem, 1)
