@@ -19,11 +19,11 @@ type NotifyItem struct {
 
 type NotifyReq struct {
 	g.Meta     `path:"/v1"  method:"post" tags:"Notify" summary:"Notify long polling"`
-	Items      []NotifyItem `v:"required" json:"items" dc:"notification items"`
-	TimeoutSec int          `json:"timeoutSec" dc:"超时时间(秒), 默认30秒"`
+	Items      []NotifyItem `v:"required" json:"items" dc:"Notification items"`
+	TimeoutSec int          `json:"timeoutSec" dc:"Timeout in seconds, default 30 seconds"`
 }
 
-// 全局变量，用于存储通知和处理long polling
+// Global variables for storing notifications and handling long polling
 var (
 	notificationChannelsMap = make(map[string]chan []NotifyItem)
 	mutex                   = sync.RWMutex{}
@@ -31,19 +31,19 @@ var (
 
 type Notify struct{}
 
-// AddNotificationItems 添加通知项到对应的channel
+// AddNotificationItems Adds notification items to the corresponding channel
 func AddNotificationItems(clientId string, items []NotifyItem) {
 	mutex.RLock()
 	ch, exists := notificationChannelsMap[clientId]
 	mutex.RUnlock()
 
 	if exists {
-		// 非阻塞方式发送，避免client已断开连接但channel未关闭的情况
+		// Non-blocking send to avoid issues when client disconnects but channel is not closed
 		select {
 		case ch <- items:
-			// 发送成功
+			// Sent successfully
 		default:
-			// channel已满或已关闭，忽略
+			// Channel is full or closed, ignore
 		}
 	}
 }
@@ -56,13 +56,13 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		return
 	}
 
-	// 设置默认超时时间为30秒
+	// Set default timeout to 30 seconds
 	timeout := 30
 	if req.TimeoutSec > 0 {
 		timeout = req.TimeoutSec
 	}
 
-	// 从请求中获取客户端ID，如果没有则使用IP地址作为ID
+	// Get client ID from header, fallback to IP if not present
 	clientId := r.GetHeader("X-Client-ID")
 	if clientId == "" {
 		clientId = r.GetClientIp()
@@ -73,24 +73,22 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		for i, item := range req.Items {
 			g.Log().Infof(ctx, "Processing item #%d: Agent=%s(%d), JobId=%d, JobStatus=%s",
 				i, item.AgentName, item.AgentId, item.JobId, item.JobStatus)
-
 		}
 
 		AddNotificationItems(clientId, req.Items)
-
 	}
 
-	// 以下是Long Polling实现部分
+	// Long polling implementation
 
-	// 创建通知通道
+	// Create notification channel
 	tmpnotificationChan := make(chan []NotifyItem, 3)
 
-	// 将通道注册到全局map
+	// Register channel in global map
 	mutex.Lock()
 	notificationChannelsMap[clientId] = tmpnotificationChan
 	mutex.Unlock()
 
-	// 确保在函数退出时清理资源
+	// Ensure cleanup on function exit
 	defer func() {
 		mutex.Lock()
 		delete(notificationChannelsMap, clientId)
@@ -98,14 +96,14 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		close(tmpnotificationChan)
 	}()
 
-	// 设置超时上下文
+	// Create timeout context
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(timeout)*time.Second)
 	defer cancel()
 
-	// 等待数据或超时
+	// Wait for data or timeout
 	select {
 	case items := <-tmpnotificationChan:
-		// 收到通知，返回数据
+		// Received notifications, return data
 		response := g.Map{
 			"code":    0,
 			"message": "New notifications received",
@@ -118,10 +116,8 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		r.Response.WriteJson(response)
 
 	case <-timeoutCtx.Done():
-		// 超时，返回空数据
-
+		// Timeout occurred, return empty response
 		g.Log().Infof(ctx, "status code: %d", 304)
-
 		r.Response.WriteStatus(304)
 	}
 
