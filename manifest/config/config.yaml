@@ -30,6 +30,11 @@ database:
   default:
     link: "mysql:yax_ops_dt2_cicdgf:ZS9ArFJznAbObCf@tcp(yax-ops-dt2-mysql0.yax.tech:3306)/yax_ops_dt2_cicdgf"
 
+redis:
+  default:
+    address: yax-ops-dt2-valkey-sentinel01.yax.tech:6379
+    db: 10
+
 # Template.
 viewer:
   paths: ["resource/template"]
