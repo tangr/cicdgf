@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
@@ -74,6 +76,17 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 			g.Log().Infof(ctx, "Processing item #%d: Agent=%s(%d), JobId=%d, JobStatus=%s",
 				i, item.AgentName, item.AgentId, item.JobId, item.JobStatus)
 		}
+
+		_, err := g.Redis().Set(ctx, "key1", "value1")
+		if err != nil {
+			g.Log().Fatal(ctx, err)
+		}
+
+		value, err := g.Redis().Get(ctx, "key2")
+		if err != nil {
+			g.Log().Fatal(ctx, err)
+		}
+		g.Log().Infof(ctx, "redis value: %s", value.String())
 
 		AddNotificationItems(clientId, req.Items)
 	}
