@@ -88,6 +88,17 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		}
 		g.Log().Infof(ctx, "redis value: %s", value.String())
 
+		userProfileKey := "user:profile:1001"
+		userProfileData := map[string]interface{}{
+			"name":  "John Doe",
+			"email": "john@example.com",
+			"age":   "32",
+		}
+		_, err = g.Redis().HSet(ctx, userProfileKey, userProfileData)
+		if err != nil {
+			g.Log().Fatal(ctx, err)
+		}
+
 		AddNotificationItems(clientId, req.Items)
 	}
 
