@@ -25,8 +25,8 @@ type NotifyReq struct {
 
 // 全局变量，用于存储通知和处理long polling
 var (
-	notificationChannels = make(map[string]chan []NotifyItem)
-	mutex                = sync.RWMutex{}
+	notificationChannelsMap = make(map[string]chan []NotifyItem)
+	mutex                   = sync.RWMutex{}
 )
 
 type Notify struct{}
@@ -34,7 +34,7 @@ type Notify struct{}
 // AddNotificationItems 添加通知项到对应的channel
 func AddNotificationItems(clientId string, items []NotifyItem) {
 	mutex.RLock()
-	ch, exists := notificationChannels[clientId]
+	ch, exists := notificationChannelsMap[clientId]
 	mutex.RUnlock()
 
 	if exists {
@@ -83,19 +83,19 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	// 以下是Long Polling实现部分
 
 	// 创建通知通道
-	notificationChan := make(chan []NotifyItem, 1)
+	tmpnotificationChan := make(chan []NotifyItem, 3)
 
 	// 将通道注册到全局map
 	mutex.Lock()
-	notificationChannels[clientId] = notificationChan
+	notificationChannelsMap[clientId] = tmpnotificationChan
 	mutex.Unlock()
 
 	// 确保在函数退出时清理资源
 	defer func() {
 		mutex.Lock()
-		delete(notificationChannels, clientId)
+		delete(notificationChannelsMap, clientId)
 		mutex.Unlock()
-		close(notificationChan)
+		close(tmpnotificationChan)
 	}()
 
 	// 设置超时上下文
@@ -104,7 +104,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 
 	// 等待数据或超时
 	select {
-	case items := <-notificationChan:
+	case items := <-tmpnotificationChan:
 		// 收到通知，返回数据
 		response := g.Map{
 			"code":    0,
