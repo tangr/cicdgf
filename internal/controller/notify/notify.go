@@ -31,7 +31,7 @@ var (
 
 type Notify struct{}
 
-// AddNotificationItems Adds notification items to the corresponding channel
+// Adds notification items to the corresponding channel
 func AddNotificationItems(clientId string, items []NotifyItem) {
 	mutex.RLock()
 	ch, exists := notificationChannelsMap[clientId]
