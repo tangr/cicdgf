@@ -47,6 +47,8 @@ func SyncNewCIJob(ctx context.Context) {
 					g.Log().Fatal(ctx, err)
 
 				}
+				AddNotificationItems(agentId, jobId)
+
 				if count == 0 {
 					err = g.Redis().SetEX(ctx, ciAgentKey, jobId, expireSecs)
 					if err != nil {
