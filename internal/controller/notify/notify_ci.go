@@ -22,6 +22,8 @@ func SyncNewCIJob(ctx context.Context) {
 		for {
 			<-ticker.C
 
+			now := time.Now()
+
 			err := dao.CicdJob.Ctx(ctx).
 				Fields("id,agent_id").
 				Where("job_type", "BUILD").
@@ -36,21 +38,28 @@ func SyncNewCIJob(ctx context.Context) {
 				agentId := strconv.Itoa(newJob.AgentId)
 				jobId := strconv.Itoa(newJob.ID)
 
-				userProfileKey := "ciagent:" + agentId
-				userProfileData := map[string]interface{}{
-					"name":  "John Doe",
-					"age":   "32",
-					"jobId": jobId,
-				}
-				_, err = g.Redis().HSet(ctx, userProfileKey, userProfileData)
+				ciAgentKey := "ciagent:" + agentId
+				count, err := g.Redis().Exists(ctx, ciAgentKey)
 				if err != nil {
 					g.Log().Fatal(ctx, err)
+
+				}
+				if count == 0 {
+					ciAgentData := map[string]interface{}{
+						"jobId": jobId,
+						"time":  now.Format("2006-01-02 15:04:05"),
+					}
+					_, err = g.Redis().HSet(ctx, ciAgentKey, ciAgentData)
+					if err != nil {
+						g.Log().Fatal(ctx, err)
+					}
+
+					_, err = g.Redis().Expire(ctx, ciAgentKey, 10*60)
+					if err != nil {
+						g.Log().Fatal(ctx, err)
+					}
 				}
 
-				_, err = g.Redis().Expire(ctx, userProfileKey, 10*60)
-				if err != nil {
-					g.Log().Fatal(ctx, err)
-				}
 			}
 
 		}
