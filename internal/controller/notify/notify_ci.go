@@ -24,6 +24,7 @@ func SyncNewCIJob(ctx context.Context) {
 
 			now := time.Now()
 
+			g.Log().Debug(ctx, "SyncNewCIJob CicdJob")
 			err := dao.CicdJob.Ctx(ctx).
 				Fields("id,agent_id").
 				Where("job_type", "BUILD").
