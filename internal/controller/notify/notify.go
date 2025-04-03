@@ -99,6 +99,11 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 			g.Log().Fatal(ctx, err)
 		}
 
+		_, err = g.Redis().Expire(ctx, userProfileKey, 10*60)
+		if err != nil {
+			g.Log().Fatal(ctx, err)
+		}
+
 		AddNotificationItems(clientId, req.Items)
 	}
 
