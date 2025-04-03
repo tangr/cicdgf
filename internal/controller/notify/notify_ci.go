@@ -22,7 +22,7 @@ func SyncNewCIJob(ctx context.Context) {
 		for {
 			<-ticker.C
 
-			now := time.Now()
+			// now := time.Now()
 
 			g.Log().Debug(ctx, "SyncNewCIJob CicdJob")
 			err := dao.CicdJob.Ctx(ctx).
@@ -35,6 +35,8 @@ func SyncNewCIJob(ctx context.Context) {
 				g.Log().Debug(ctx, "Failed to get BUILD jobs:", err)
 			}
 
+			expireSecs := int64(10 * 60)
+
 			for _, newJob := range *newJobs {
 				agentId := strconv.Itoa(newJob.AgentId)
 				jobId := strconv.Itoa(newJob.ID)
@@ -46,19 +48,11 @@ func SyncNewCIJob(ctx context.Context) {
 
 				}
 				if count == 0 {
-					ciAgentData := map[string]interface{}{
-						"jobId": jobId,
-						"time":  now.Format("2006-01-02 15:04:05"),
-					}
-					_, err = g.Redis().HSet(ctx, ciAgentKey, ciAgentData)
+					err = g.Redis().SetEX(ctx, ciAgentKey, jobId, expireSecs)
 					if err != nil {
 						g.Log().Fatal(ctx, err)
 					}
 
-					_, err = g.Redis().Expire(ctx, ciAgentKey, 10*60)
-					if err != nil {
-						g.Log().Fatal(ctx, err)
-					}
 				}
 
 			}
