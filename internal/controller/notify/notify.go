@@ -12,11 +12,11 @@ import (
 )
 
 type NotifyItem struct {
-	AgentId   int    `v:"required" json:"agentId"   dc:"agentId"`
+	AgentId   string `v:"required" json:"agentId"   dc:"agentId"`
 	AgentName string `v:"required" json:"agentName" dc:"agentName"`
-	JobId     int    `v:"required" json:"jobId"     dc:"jobId"`
-	JobStatus string `v:"required" json:"jobStatus" dc:"jobStatus"`
-	JobOutput string `v:"required" json:"jobOutput" dc:"jobOutput"`
+	// JobId     int    `v:"required" json:"jobId"     dc:"jobId"`
+	// JobStatus string `v:"required" json:"jobStatus" dc:"jobStatus"`
+	// JobOutput string `v:"required" json:"jobOutput" dc:"jobOutput"`
 }
 
 type NotifyReq struct {
@@ -27,22 +27,22 @@ type NotifyReq struct {
 
 // Global variables for storing notifications and handling long polling
 var (
-	notificationChannelsMap = make(map[string]chan []NotifyItem)
+	notificationChannelsMap = make(map[string]chan string)
 	mutex                   = sync.RWMutex{}
 )
 
 type Notify struct{}
 
 // Adds notification items to the corresponding channel
-func AddNotificationItems(clientId string, items []NotifyItem) {
+func AddNotificationItems(agentId string, jobId string) {
 	mutex.RLock()
-	ch, exists := notificationChannelsMap[clientId]
+	ch, exists := notificationChannelsMap[agentId]
 	mutex.RUnlock()
 
 	if exists {
 		// Non-blocking send to avoid issues when client disconnects but channel is not closed
 		select {
-		case ch <- items:
+		case ch <- jobId:
 			// Sent successfully
 		default:
 			// Channel is full or closed, ignore
@@ -73,27 +73,29 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 
 	if len(req.Items) > 0 {
 		for i, item := range req.Items {
-			g.Log().Infof(ctx, "Processing item #%d: Agent=%s(%d), JobId=%d, JobStatus=%s",
-				i, item.AgentName, item.AgentId, item.JobId, item.JobStatus)
+			g.Log().Infof(ctx, "Processing item #%d: Agent=%s(%d)",
+				i, item.AgentName, item.AgentId)
+
+			// AddNotificationItems(item.AgentId, req.Items)
+
 		}
 
-		AddNotificationItems(clientId, req.Items)
 	}
 
 	// Long polling implementation
 
 	// Create notification channel
-	tmpnotificationChan := make(chan []NotifyItem, 3)
+	tmpnotificationChan := make(chan string, 3)
 
 	// Register channel in global map
 	mutex.Lock()
-	notificationChannelsMap[clientId] = tmpnotificationChan
+	notificationChannelsMap[agentId] = tmpnotificationChan
 	mutex.Unlock()
 
 	// Ensure cleanup on function exit
 	defer func() {
 		mutex.Lock()
-		delete(notificationChannelsMap, clientId)
+		delete(notificationChannelsMap, agentId)
 		mutex.Unlock()
 		close(tmpnotificationChan)
 	}()
