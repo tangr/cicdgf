@@ -77,33 +77,6 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 				i, item.AgentName, item.AgentId, item.JobId, item.JobStatus)
 		}
 
-		_, err := g.Redis().Set(ctx, "key1", "value1")
-		if err != nil {
-			g.Log().Fatal(ctx, err)
-		}
-
-		value, err := g.Redis().Get(ctx, "key2")
-		if err != nil {
-			g.Log().Fatal(ctx, err)
-		}
-		g.Log().Infof(ctx, "redis value: %s", value.String())
-
-		userProfileKey := "user:profile:1001"
-		userProfileData := map[string]interface{}{
-			"name":  "John Doe",
-			"email": "john@example.com",
-			"age":   "32",
-		}
-		_, err = g.Redis().HSet(ctx, userProfileKey, userProfileData)
-		if err != nil {
-			g.Log().Fatal(ctx, err)
-		}
-
-		_, err = g.Redis().Expire(ctx, userProfileKey, 10*60)
-		if err != nil {
-			g.Log().Fatal(ctx, err)
-		}
-
 		AddNotificationItems(clientId, req.Items)
 	}
 
