@@ -58,38 +58,65 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	r := g.RequestFromCtx(ctx)
 
 	// Parameter validation
-	if req == nil || len(req.Items) == 0 {
-		r.Response.WriteStatusExit(400, "Invalid request")
+	if err = validateRequest(req); err != nil {
+		r.Response.WriteStatusExit(400, err.Error())
 		return
 	}
 
 	// Set timeout duration
-	timeout := 30
-	if req.TimeoutSec > 0 {
-		timeout = req.TimeoutSec
-	}
+	timeout := getTimeout(req.TimeoutSec)
 	timeoutDuration := time.Duration(timeout) * time.Second
 
 	// Collect all agentIds
-	agentIds := make([]string, 0, len(req.Items))
-	for _, item := range req.Items {
-		agentIds = append(agentIds, item.AgentId)
-	}
+	agentIds := collectAgentIds(req.Items)
 
 	// Step 1: Check immediately if notifications already exist
+	result, found, err := checkExistingNotifications(ctx, r, agentIds)
+	if err != nil || found {
+		return result, err
+	}
+
+	// Step 2: Start long polling
+	return performLongPolling(ctx, r, agentIds, timeoutDuration)
+}
+
+func validateRequest(req *NotifyReq) error {
+	if req == nil || len(req.Items) == 0 {
+		return fmt.Errorf("invalid request")
+	}
+	return nil
+}
+
+func getTimeout(requestedTimeout int) int {
+	if requestedTimeout > 0 {
+		return requestedTimeout
+	}
+	return 30
+}
+
+func collectAgentIds(items []NotifyItem) []string {
+	agentIds := make([]string, 0, len(items))
+	for _, item := range items {
+		agentIds = append(agentIds, item.AgentId)
+	}
+	return agentIds
+}
+
+func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds []string) (*ghttp.Response, bool, error) {
 	mutex.RLock()
+	defer mutex.RUnlock()
+
 	for _, agentId := range agentIds {
+		// 检查代理是否存在
 		ciAgentKey := "ciagent:" + agentId
 		count, redisErr := g.Redis().Exists(ctx, ciAgentKey)
 		if redisErr != nil {
-			mutex.RUnlock()
 			g.Log().Error(ctx, "Redis error:", redisErr)
-			err = redisErr
 			r.Response.WriteStatus(500)
-			return nil, fmt.Errorf("redis exists operation failed: %w", err)
+			return nil, true, fmt.Errorf("redis exists operation failed: %w", redisErr)
 		}
+
 		if count == 0 {
-			mutex.RUnlock()
 			r.Response.WriteStatus(404)
 			r.Response.WriteJson(g.Map{
 				"code":    0,
@@ -98,10 +125,11 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 					"agentId": agentId,
 				},
 			})
-			return
+			return nil, true, nil
 		}
+
+		// 检查是否有现有通知
 		if jobId, exists := agentNotifications[agentId]; exists {
-			mutex.RUnlock()
 			r.Response.WriteJson(g.Map{
 				"code":    0,
 				"message": "Notification found",
@@ -111,12 +139,14 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 				},
 			})
 			delete(agentNotifications, agentId)
-			return
+			return nil, true, nil
 		}
 	}
-	mutex.RUnlock()
 
-	// Step 2: Start long polling
+	return nil, false, nil
+}
+
+func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []string, timeoutDuration time.Duration) (*ghttp.Response, error) {
 	ctxTimeout, cancel := context.WithTimeout(ctx, timeoutDuration)
 	defer cancel()
 
@@ -126,39 +156,12 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	}, 1)
 
 	// Register listening channels
-	mutex.Lock()
-	for _, agentId := range agentIds {
-		if _, exists := notificationChannelsMap[agentId]; !exists {
-			notificationChannelsMap[agentId] = make(chan string, 1)
-		}
-	}
-	mutex.Unlock()
-
+	registerNotificationChannels(agentIds)
 	// Cleanup function
-	defer func() {
-		mutex.Lock()
-		defer mutex.Unlock()
-		for _, agentId := range agentIds {
-			delete(notificationChannelsMap, agentId)
-		}
-	}()
+	defer cleanupNotificationChannels(agentIds)
 
 	// Start listener goroutines
-	for _, agentId := range agentIds {
-		go func(id string) {
-			select {
-			case jobId := <-notificationChannelsMap[id]:
-				select {
-				case done <- struct {
-					agentId string
-					jobId   string
-				}{agentId: id, jobId: jobId}:
-				default:
-				}
-			case <-ctxTimeout.Done():
-			}
-		}(agentId)
-	}
+	startListenerGoroutines(ctxTimeout, agentIds, done)
 
 	// Wait for results
 	select {
@@ -175,5 +178,46 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		r.Response.WriteStatus(304)
 	}
 
-	return
+	return nil, nil
+}
+
+func registerNotificationChannels(agentIds []string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	for _, agentId := range agentIds {
+		if _, exists := notificationChannelsMap[agentId]; !exists {
+			notificationChannelsMap[agentId] = make(chan string, 1)
+		}
+	}
+}
+
+func cleanupNotificationChannels(agentIds []string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	for _, agentId := range agentIds {
+		delete(notificationChannelsMap, agentId)
+	}
+}
+
+func startListenerGoroutines(ctxTimeout context.Context, agentIds []string, done chan<- struct {
+	agentId string
+	jobId   string
+}) {
+	for _, agentId := range agentIds {
+		go func(id string) {
+			select {
+			case jobId := <-notificationChannelsMap[id]:
+				select {
+				case done <- struct {
+					agentId string
+					jobId   string
+				}{agentId: id, jobId: jobId}:
+				default:
+				}
+			case <-ctxTimeout.Done():
+			}
+		}(agentId)
+	}
 }
