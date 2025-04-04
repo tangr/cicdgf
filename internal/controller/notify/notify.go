@@ -78,6 +78,17 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	// 第一步：立即检查是否存在已有通知
 	mutex.RLock()
 	for _, agentId := range agentIds {
+		ciAgentKey := "ciagent:" + agentId
+		count, err2 := g.Redis().Exists(ctx, ciAgentKey)
+		if err2 != nil {
+			g.Log().Fatal(ctx, err)
+
+		}
+		if count == 0 {
+			mutex.RUnlock()
+			r.Response.WriteStatus(404)
+			return
+		}
 		if jobId, exists := agentNotifications[agentId]; exists {
 			mutex.RUnlock()
 			r.Response.WriteJson(g.Map{
