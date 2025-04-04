@@ -31,7 +31,7 @@ var (
 	// 存储agent通知状态
 	agentNotifications = make(map[string]string)
 	// 存储等待中的请求通道
-	notificationChannelsMap = make(map[string][]chan string)
+	notificationChannelsMap = make(map[string]chan string)
 	mutex                   = sync.RWMutex{}
 )
 
@@ -42,13 +42,11 @@ func AddNotification(agentId, jobId string) {
 	// 更新通知状态
 	agentNotifications[agentId] = jobId
 
-	// 通知所有等待的通道
-	if channels, exists := notificationChannelsMap[agentId]; exists {
-		for _, ch := range channels {
-			select {
-			case ch <- jobId: // 非阻塞发送
-			default:
-			}
+	// 通知等待的通道
+	if ch, exists := notificationChannelsMap[agentId]; exists {
+		select {
+		case ch <- jobId: // 非阻塞发送
+		default:
 		}
 		// 清空已通知的通道
 		delete(notificationChannelsMap, agentId)
@@ -99,15 +97,17 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	ctxTimeout, cancel := context.WithTimeout(ctx, timeoutDuration)
 	defer cancel()
 
-	done := make(chan string, 1)
-	var channels []chan string
+	done := make(chan struct {
+		agentId string
+		jobId   string
+	}, 1)
 
 	// 注册监听通道
 	mutex.Lock()
 	for _, agentId := range agentIds {
-		ch := make(chan string, 1)
-		channels = append(channels, ch)
-		notificationChannelsMap[agentId] = append(notificationChannelsMap[agentId], ch)
+		if _, exists := notificationChannelsMap[agentId]; !exists {
+			notificationChannelsMap[agentId] = make(chan string, 1)
+		}
 	}
 	mutex.Unlock()
 
@@ -115,48 +115,37 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	defer func() {
 		mutex.Lock()
 		defer mutex.Unlock()
-		for i, agentId := range agentIds {
-			// 从通知通道列表中移除
-			remaining := make([]chan string, 0)
-			for _, c := range notificationChannelsMap[agentId] {
-				if c != channels[i] {
-					remaining = append(remaining, c)
-				}
-			}
-			if len(remaining) > 0 {
-				notificationChannelsMap[agentId] = remaining
-			} else {
-				delete(notificationChannelsMap, agentId)
-			}
-			close(channels[i])
+		for _, agentId := range agentIds {
+			delete(notificationChannelsMap, agentId)
 		}
 	}()
 
 	// 启动监听goroutine
-	go func() {
-		for _, ch := range channels {
-			go func(c <-chan string) {
+	for _, agentId := range agentIds {
+		go func(id string) {
+			select {
+			case jobId := <-notificationChannelsMap[id]:
 				select {
-				case jobId := <-c:
-					select {
-					case done <- jobId:
-					default:
-					}
-				case <-ctxTimeout.Done():
+				case done <- struct {
+					agentId string
+					jobId   string
+				}{agentId: id, jobId: jobId}:
+				default:
 				}
-			}(ch)
-		}
-	}()
+			case <-ctxTimeout.Done():
+			}
+		}(agentId)
+	}
 
 	// 等待结果
 	select {
-	case jobId := <-done:
+	case notification := <-done:
 		r.Response.WriteJson(g.Map{
 			"code":    0,
 			"message": "Notification received",
 			"data": g.Map{
-				// "agentId": agentId,
-				"jobId": jobId,
+				"agentId": notification.agentId,
+				"jobId":   notification.jobId,
 			},
 		})
 	case <-ctxTimeout.Done():
