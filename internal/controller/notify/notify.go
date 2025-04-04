@@ -110,6 +110,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 					"jobId":   jobId,
 				},
 			})
+			delete(agentNotifications, agentId)
 			return
 		}
 	}
