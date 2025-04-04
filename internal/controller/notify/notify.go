@@ -2,6 +2,7 @@ package notify
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -79,10 +80,13 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	mutex.RLock()
 	for _, agentId := range agentIds {
 		ciAgentKey := "ciagent:" + agentId
-		count, err2 := g.Redis().Exists(ctx, ciAgentKey)
-		if err2 != nil {
-			g.Log().Fatal(ctx, err)
-
+		count, redisErr := g.Redis().Exists(ctx, ciAgentKey)
+		if redisErr != nil {
+			mutex.RUnlock()
+			g.Log().Error(ctx, "Redis error:", redisErr)
+			err = redisErr
+			r.Response.WriteStatus(500)
+			return nil, fmt.Errorf("redis exists operation failed: %w", err)
 		}
 		if count == 0 {
 			mutex.RUnlock()
