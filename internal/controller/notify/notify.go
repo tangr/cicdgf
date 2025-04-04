@@ -25,103 +25,141 @@ type NotifyReq struct {
 	TimeoutSec int          `json:"timeoutSec" dc:"Timeout in seconds, default 30 seconds"`
 }
 
-// Global variables for storing notifications and handling long polling
+type Notify struct{}
+
 var (
-	notificationChannelsMap = make(map[string]chan string)
+	// 存储agent通知状态
+	agentNotifications = make(map[string]string)
+	// 存储等待中的请求通道
+	notificationChannelsMap = make(map[string][]chan string)
 	mutex                   = sync.RWMutex{}
 )
 
-type Notify struct{}
+func AddNotification(agentId, jobId string) {
+	mutex.Lock()
+	defer mutex.Unlock()
 
-// Adds notification items to the corresponding channel
-func AddNotificationItems(agentId string, jobId string) {
-	mutex.RLock()
-	ch, exists := notificationChannelsMap[agentId]
-	mutex.RUnlock()
+	// 更新通知状态
+	agentNotifications[agentId] = jobId
 
-	if exists {
-		// Non-blocking send to avoid issues when client disconnects but channel is not closed
-		select {
-		case ch <- jobId:
-			// Sent successfully
-		default:
-			// Channel is full or closed, ignore
+	// 通知所有等待的通道
+	if channels, exists := notificationChannelsMap[agentId]; exists {
+		for _, ch := range channels {
+			select {
+			case ch <- jobId: // 非阻塞发送
+			default:
+			}
 		}
+		// 清空已通知的通道
+		delete(notificationChannelsMap, agentId)
 	}
 }
 
 func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
-	if req == nil {
-		r.Response.WriteStatusExit(400, "Invalid request: request body is required")
+	// 参数校验
+	if req == nil || len(req.Items) == 0 {
+		r.Response.WriteStatusExit(400, "Invalid request")
 		return
 	}
 
-	// Set default timeout to 30 seconds
+	// 设置超时时间
 	timeout := 30
 	if req.TimeoutSec > 0 {
 		timeout = req.TimeoutSec
 	}
+	timeoutDuration := time.Duration(timeout) * time.Second
 
-	// Get client ID from header, fallback to IP if not present
-	clientId := r.GetHeader("X-Client-ID")
-	if clientId == "" {
-		clientId = r.GetClientIp()
+	// 收集所有agentId
+	agentIds := make([]string, 0, len(req.Items))
+	for _, item := range req.Items {
+		agentIds = append(agentIds, item.AgentId)
 	}
-	g.Log().Infof(ctx, "clientId: %s", clientId)
 
-	if len(req.Items) > 0 {
-		for i, item := range req.Items {
-			g.Log().Infof(ctx, "Processing item #%d: Agent=%s(%d)",
-				i, item.AgentName, item.AgentId)
-
-			// AddNotificationItems(item.AgentId, req.Items)
-
+	// 第一步：立即检查是否存在已有通知
+	mutex.RLock()
+	for _, agentId := range agentIds {
+		if jobId, exists := agentNotifications[agentId]; exists {
+			mutex.RUnlock()
+			r.Response.WriteJson(g.Map{
+				"code":    0,
+				"message": "Notification found",
+				"data": g.Map{
+					"agentId": agentId,
+					"jobId":   jobId,
+				},
+			})
+			return
 		}
-
 	}
+	mutex.RUnlock()
 
-	// Long polling implementation
-
-	// Create notification channel
-	tmpnotificationChan := make(chan string, 3)
-
-	// Register channel in global map
-	mutex.Lock()
-	notificationChannelsMap[agentId] = tmpnotificationChan
-	mutex.Unlock()
-
-	// Ensure cleanup on function exit
-	defer func() {
-		mutex.Lock()
-		delete(notificationChannelsMap, agentId)
-		mutex.Unlock()
-		close(tmpnotificationChan)
-	}()
-
-	// Create timeout context
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(timeout)*time.Second)
+	// 第二步：进入长轮询
+	ctxTimeout, cancel := context.WithTimeout(ctx, timeoutDuration)
 	defer cancel()
 
-	// Wait for data or timeout
-	select {
-	case items := <-tmpnotificationChan:
-		// Received notifications, return data
-		response := g.Map{
-			"code":    0,
-			"message": "New notifications received",
-			"data": g.Map{
-				"items":          items,
-				"processedCount": len(items),
-			},
-		}
-		r.Response.WriteStatus(200)
-		r.Response.WriteJson(response)
+	done := make(chan string, 1)
+	var channels []chan string
 
-	case <-timeoutCtx.Done():
-		// Timeout occurred, return empty response
-		g.Log().Infof(ctx, "status code: %d", 304)
+	// 注册监听通道
+	mutex.Lock()
+	for _, agentId := range agentIds {
+		ch := make(chan string, 1)
+		channels = append(channels, ch)
+		notificationChannelsMap[agentId] = append(notificationChannelsMap[agentId], ch)
+	}
+	mutex.Unlock()
+
+	// 清理函数
+	defer func() {
+		mutex.Lock()
+		defer mutex.Unlock()
+		for i, agentId := range agentIds {
+			// 从通知通道列表中移除
+			remaining := make([]chan string, 0)
+			for _, c := range notificationChannelsMap[agentId] {
+				if c != channels[i] {
+					remaining = append(remaining, c)
+				}
+			}
+			if len(remaining) > 0 {
+				notificationChannelsMap[agentId] = remaining
+			} else {
+				delete(notificationChannelsMap, agentId)
+			}
+			close(channels[i])
+		}
+	}()
+
+	// 启动监听goroutine
+	go func() {
+		for _, ch := range channels {
+			go func(c <-chan string) {
+				select {
+				case jobId := <-c:
+					select {
+					case done <- jobId:
+					default:
+					}
+				case <-ctxTimeout.Done():
+				}
+			}(ch)
+		}
+	}()
+
+	// 等待结果
+	select {
+	case jobId := <-done:
+		r.Response.WriteJson(g.Map{
+			"code":    0,
+			"message": "Notification received",
+			"data": g.Map{
+				// "agentId": agentId,
+				"jobId": jobId,
+			},
+		})
+	case <-ctxTimeout.Done():
 		r.Response.WriteStatus(304)
 	}
 
