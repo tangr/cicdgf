@@ -29,9 +29,9 @@ type NotifyReq struct {
 type Notify struct{}
 
 var (
-	// 存储agent通知状态
+	// Store agent notification status
 	agentNotifications = make(map[string]string)
-	// 存储等待中的请求通道
+	// Store channels for waiting requests
 	notificationChannelsMap = make(map[string]chan string)
 	mutex                   = sync.RWMutex{}
 )
@@ -40,16 +40,16 @@ func AddNotification(agentId, jobId string) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// 更新通知状态
+	// Update notification status
 	agentNotifications[agentId] = jobId
 
-	// 通知等待的通道
+	// Notify waiting channels
 	if ch, exists := notificationChannelsMap[agentId]; exists {
 		select {
-		case ch <- jobId: // 非阻塞发送
+		case ch <- jobId: // Non-blocking send
 		default:
 		}
-		// 清空已通知的通道
+		// Clear the notified channel
 		delete(notificationChannelsMap, agentId)
 	}
 }
@@ -57,26 +57,26 @@ func AddNotification(agentId, jobId string) {
 func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response, err error) {
 	r := g.RequestFromCtx(ctx)
 
-	// 参数校验
+	// Parameter validation
 	if req == nil || len(req.Items) == 0 {
 		r.Response.WriteStatusExit(400, "Invalid request")
 		return
 	}
 
-	// 设置超时时间
+	// Set timeout duration
 	timeout := 30
 	if req.TimeoutSec > 0 {
 		timeout = req.TimeoutSec
 	}
 	timeoutDuration := time.Duration(timeout) * time.Second
 
-	// 收集所有agentId
+	// Collect all agentIds
 	agentIds := make([]string, 0, len(req.Items))
 	for _, item := range req.Items {
 		agentIds = append(agentIds, item.AgentId)
 	}
 
-	// 第一步：立即检查是否存在已有通知
+	// Step 1: Check immediately if notifications already exist
 	mutex.RLock()
 	for _, agentId := range agentIds {
 		ciAgentKey := "ciagent:" + agentId
@@ -115,7 +115,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	}
 	mutex.RUnlock()
 
-	// 第二步：进入长轮询
+	// Step 2: Start long polling
 	ctxTimeout, cancel := context.WithTimeout(ctx, timeoutDuration)
 	defer cancel()
 
@@ -124,7 +124,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		jobId   string
 	}, 1)
 
-	// 注册监听通道
+	// Register listening channels
 	mutex.Lock()
 	for _, agentId := range agentIds {
 		if _, exists := notificationChannelsMap[agentId]; !exists {
@@ -133,7 +133,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 	}
 	mutex.Unlock()
 
-	// 清理函数
+	// Cleanup function
 	defer func() {
 		mutex.Lock()
 		defer mutex.Unlock()
@@ -142,7 +142,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		}
 	}()
 
-	// 启动监听goroutine
+	// Start listener goroutines
 	for _, agentId := range agentIds {
 		go func(id string) {
 			select {
@@ -159,7 +159,7 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		}(agentId)
 	}
 
-	// 等待结果
+	// Wait for results
 	select {
 	case notification := <-done:
 		r.Response.WriteJson(g.Map{
