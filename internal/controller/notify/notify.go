@@ -91,6 +91,13 @@ func (Notify) NotifyV1(ctx context.Context, req *NotifyReq) (res *ghttp.Response
 		if count == 0 {
 			mutex.RUnlock()
 			r.Response.WriteStatus(404)
+			r.Response.WriteJson(g.Map{
+				"code":    0,
+				"message": "agentId Not Found",
+				"data": g.Map{
+					"agentId": agentId,
+				},
+			})
 			return
 		}
 		if jobId, exists := agentNotifications[agentId]; exists {
