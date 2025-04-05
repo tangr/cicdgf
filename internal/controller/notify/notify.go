@@ -107,7 +107,7 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 	defer mutex.RUnlock()
 
 	for _, agentId := range agentIds {
-		// 检查代理是否存在
+		// Check if agent exists
 		ciAgentKey := "ciagent:" + agentId
 		count, redisErr := g.Redis().Exists(ctx, ciAgentKey)
 		if redisErr != nil {
@@ -128,7 +128,7 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 			return nil, true, nil
 		}
 
-		// 检查是否有现有通知
+		// Check if there are existing notifications
 		if jobId, exists := agentNotifications[agentId]; exists {
 			r.Response.WriteJson(g.Map{
 				"code":    0,
