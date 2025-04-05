@@ -107,6 +107,21 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 	defer mutex.RUnlock()
 
 	for _, agentId := range agentIds {
+		// Check if there are existing notifications
+		if jobId, exists := agentNotifications[agentId]; exists {
+			r.Response.WriteStatus(200)
+			r.Response.WriteJson(g.Map{
+				"code":    0,
+				"message": "Notification found",
+				"data": g.Map{
+					"agentId": agentId,
+					"jobId":   jobId,
+				},
+			})
+			delete(agentNotifications, agentId)
+			return nil, true, nil
+		}
+
 		// Check if agent exists
 		ciAgentKey := "ciagent:" + agentId
 		count, redisErr := g.Redis().Exists(ctx, ciAgentKey)
@@ -128,19 +143,6 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 			return nil, true, nil
 		}
 
-		// Check if there are existing notifications
-		if jobId, exists := agentNotifications[agentId]; exists {
-			r.Response.WriteJson(g.Map{
-				"code":    0,
-				"message": "Notification found",
-				"data": g.Map{
-					"agentId": agentId,
-					"jobId":   jobId,
-				},
-			})
-			delete(agentNotifications, agentId)
-			return nil, true, nil
-		}
 	}
 
 	return nil, false, nil
