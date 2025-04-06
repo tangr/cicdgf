@@ -7,10 +7,39 @@ import (
 )
 
 type GetOneReq struct {
-	g.Meta `path:"/log/{log_id}" method:"get" tags:"api" summary:"Get one log"`
-	Id     int64 `v:"required" dc:"log id"`
+	g.Meta `path:"/log/{log_id}" method:"get" tags:"api" summary:"GetOne Log"`
+	Id     uint64 `v:"required" dc:"log id"`
 }
-
 type GetOneRes struct {
 	*entity.CicdLog `dc:"log"`
 }
+
+type CreateReq struct {
+	g.Meta     `path:"/log" method:"post" tags:"Log" summary:"Create Log"`
+	PipelineId int    `v:"required" json:"pipelineId" dc:"Pipeline ID"`
+	AgentId    int    `v:"required" json:"agentId" dc:"Agent ID"`
+	JobType    string `v:"required" json:"jobType" dc:"Job type"`
+	JobId      int    `v:"required" json:"jobId" dc:"Job ID"`
+	TaskStatus string `v:"" json:"taskStatus" dc:"Task status"`
+	Ipaddr     string `v:"" json:"ipaddr" dc:"IP address"`
+	UpdatedAt  int64  `v:"" json:"updatedAt" dc:"Update timestamp"`
+	Output     string `v:"" json:"output" dc:"Output content"`
+}
+type CreateRes struct {
+	Id int64 `json:"id" dc:"log id"`
+}
+
+type UpdateReq struct {
+	g.Meta `path:"/log/{id}" method:"put" tags:"Log" summary:"Update Log"`
+
+	Id         uint64 `v:"required" json:"logId" dc:"Log ID"`
+	PipelineId int    `v:"required" json:"pipelineId" dc:"Pipeline ID"`
+	AgentId    int    `v:"required" json:"agentId" dc:"Agent ID"`
+	JobType    string `v:"required" json:"jobType" dc:"Job type"`
+	JobId      int    `v:"required" json:"jobId" dc:"Job ID"`
+	TaskStatus string `v:"" json:"taskStatus" dc:"Task status"`
+	Ipaddr     string `v:"" json:"ipaddr" dc:"IP address"`
+	UpdatedAt  int64  `v:"" json:"updatedAt" dc:"Update timestamp"`
+	Output     string `v:"" json:"output" dc:"Output content"`
+}
+type UpdateRes struct{}
