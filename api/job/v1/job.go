@@ -8,7 +8,7 @@ import (
 
 type GetOneReq struct {
 	g.Meta `path:"/job/{job_id}" method:"get" tags:"api" summary:"Get one job"`
-	Id     int64 `v:"required" dc:"user id"`
+	Id     int64 `v:"required" dc:"job id"`
 }
 
 type GetOneRes struct {
