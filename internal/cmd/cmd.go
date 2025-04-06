@@ -8,6 +8,7 @@ import (
 	"github.com/gogf/gf/v2/os/gcmd"
 
 	"cicdgf/internal/controller/hello"
+	"cicdgf/internal/controller/job"
 	"cicdgf/internal/controller/notify"
 	"cicdgf/internal/controller/ui"
 	"cicdgf/internal/controller/user"
@@ -25,10 +26,12 @@ var (
 			notify.SyncNewCIJob(ctx)
 
 			s.Group("/api", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				// group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Middleware(middleware.ResponseMiddleware)
 				group.Bind(
 					hello.NewV1(),
 					user.NewV1(),
+					job.NewV1(),
 				)
 			})
 
