@@ -27,8 +27,8 @@ var (
 			notify.SyncNewCIJob(ctx)
 
 			s.Group("/api", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
-				// group.Middleware(middleware.ResponseMiddleware)
+				// group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Middleware(middleware.ResponseMiddleware)
 				group.Bind(
 					hello.NewV1(),
 					user.NewV1(),
