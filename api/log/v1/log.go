@@ -20,10 +20,10 @@ type CreateReq struct {
 	AgentId    int    `v:"required" json:"agentId" dc:"Agent ID"`
 	JobType    string `v:"required" json:"jobType" dc:"Job type"`
 	JobId      int    `v:"required" json:"jobId" dc:"Job ID"`
-	TaskStatus string `v:"" json:"taskStatus" dc:"Task status"`
-	Ipaddr     string `v:"" json:"ipaddr" dc:"IP address"`
-	UpdatedAt  int64  `v:"" json:"updatedAt" dc:"Update timestamp"`
-	Output     string `v:"" json:"output" dc:"Output content"`
+	TaskStatus string `v:"required" json:"taskStatus" dc:"Task status"`
+	Ipaddr     string `v:"required" json:"ipaddr" dc:"IP address"`
+	UpdatedAt  int64  `v:"required" json:"updatedAt" dc:"Update timestamp"`
+	Output     string `v:"required" json:"output" dc:"Output content"`
 }
 type CreateRes struct {
 	Id int64 `json:"id" dc:"log id"`
@@ -37,9 +37,9 @@ type UpdateReq struct {
 	AgentId    int    `v:"required" json:"agentId" dc:"Agent ID"`
 	JobType    string `v:"required" json:"jobType" dc:"Job type"`
 	JobId      int    `v:"required" json:"jobId" dc:"Job ID"`
-	TaskStatus string `v:"" json:"taskStatus" dc:"Task status"`
-	Ipaddr     string `v:"" json:"ipaddr" dc:"IP address"`
-	UpdatedAt  int64  `v:"" json:"updatedAt" dc:"Update timestamp"`
-	Output     string `v:"" json:"output" dc:"Output content"`
+	TaskStatus string `v:"required" json:"taskStatus" dc:"Task status"`
+	Ipaddr     string `v:"required" json:"ipaddr" dc:"IP address"`
+	UpdatedAt  int64  `v:"required" json:"updatedAt" dc:"Update timestamp"`
+	Output     string `v:"required" json:"output" dc:"Output content"`
 }
 type UpdateRes struct{}
