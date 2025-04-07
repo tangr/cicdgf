@@ -10,6 +10,11 @@ type Response struct {
 func ResponseMiddleware(r *ghttp.Request) {
 	r.Middleware.Next()
 
+	// There's custom buffer content, it then exits current handler.
+	if r.Response.BufferLength() > 0 || r.Response.Writer.BytesWritten() > 0 {
+		return
+	}
+
 	var (
 		msg string
 		res = r.GetHandlerResponse()
