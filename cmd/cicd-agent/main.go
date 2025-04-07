@@ -447,6 +447,10 @@ func (s *agentCICD) AgentRun() {
 
 			// 解析服务器响应
 			var serverTasks WsServerSend
+
+			g.Log().Debug(ctx, apiUrl+"/notifys/v1")
+			g.Log().Debug(ctx, response.StatusCode)
+
 			res := response.ReadAll()
 			g.Log().Debug(ctx, res)
 			err = json.Unmarshal(res, &serverTasks)
