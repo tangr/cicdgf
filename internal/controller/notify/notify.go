@@ -21,7 +21,7 @@ type NotifyItem struct {
 }
 
 type NotifyReq struct {
-	g.Meta     `path:"/v1"  method:"post" tags:"Notify" summary:"Notify long polling"`
+	g.Meta     `path:"/notifys/v1"  method:"post" tags:"Notify" summary:"Notify long polling"`
 	Items      []NotifyItem `v:"required" json:"items" dc:"Notification items"`
 	TimeoutSec int          `json:"timeoutSec" dc:"Timeout in seconds, default 30 seconds"`
 }
