@@ -109,7 +109,7 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 	for _, agentId := range agentIds {
 		// Check if there are existing notifications
 		if jobId, exists := agentNotifications[agentId]; exists {
-			r.Response.WriteStatus(200)
+			r.Response.Status = 200
 			r.Response.WriteJson(g.Map{
 				"code":    0,
 				"message": "Notification found",
@@ -118,6 +118,7 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 					"jobId":   jobId,
 				},
 			})
+
 			delete(agentNotifications, agentId)
 			return nil, true, nil
 		}
@@ -132,7 +133,8 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 		}
 
 		if count == 0 {
-			r.Response.WriteStatus(404)
+			g.Log().Error(ctx, "ciAgentKey:", ciAgentKey)
+			r.Response.Status = 404
 			r.Response.WriteJson(g.Map{
 				"code":    0,
 				"message": "agentId Not Found",
@@ -168,6 +170,7 @@ func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []string
 	// Wait for results
 	select {
 	case notification := <-done:
+		r.Response.Status = 200
 		r.Response.WriteJson(g.Map{
 			"code":    0,
 			"message": "Notification received",
