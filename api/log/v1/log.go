@@ -18,9 +18,9 @@ type CreateReq struct {
 	g.Meta     `path:"/log" method:"post" tags:"Log" summary:"Create Log"`
 	PipelineId int    `v:"required" json:"pipelineId" dc:"Pipeline ID"`
 	AgentId    int    `v:"required" json:"agentId" dc:"Agent ID"`
-	JobType    string `v:"required" json:"jobType" dc:"Job type"`
+	JobType    string `v:"required|in:BUILD,DEPLOY" json:"jobType" dc:"Job type"`
 	JobId      int    `v:"required" json:"jobId" dc:"Job ID"`
-	TaskStatus string `v:"required" json:"taskStatus" dc:"Task status"`
+	TaskStatus string `v:"required|in:pending,running,failed,success" json:"taskStatus" dc:"Task status"`
 	Ipaddr     string `v:"required" json:"ipaddr" dc:"IP address"`
 	UpdatedAt  int64  `v:"required" json:"updatedAt" dc:"Update timestamp"`
 	Output     string `v:"required" json:"output" dc:"Output content"`
@@ -35,9 +35,9 @@ type UpdateReq struct {
 	Id         uint64 `v:"required" json:"logId" dc:"Log ID"`
 	PipelineId int    `v:"required" json:"pipelineId" dc:"Pipeline ID"`
 	AgentId    int    `v:"required" json:"agentId" dc:"Agent ID"`
-	JobType    string `v:"required" json:"jobType" dc:"Job type"`
+	JobType    string `v:"required|in:BUILD,DEPLOY" json:"jobType" dc:"Job type"`
 	JobId      int    `v:"required" json:"jobId" dc:"Job ID"`
-	TaskStatus string `v:"required" json:"taskStatus" dc:"Task status"`
+	TaskStatus string `v:"required|in:pending,running,failed,success" json:"taskStatus" dc:"Task status"`
 	Ipaddr     string `v:"required" json:"ipaddr" dc:"IP address"`
 	UpdatedAt  int64  `v:"required" json:"updatedAt" dc:"Update timestamp"`
 	Output     string `v:"required" json:"output" dc:"Output content"`
