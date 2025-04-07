@@ -34,6 +34,14 @@ var (
 					user.NewV1(),
 					job.NewV1(),
 					log.NewV1(),
+					new(notify.Notify),
+				)
+			})
+
+			s.Group("/notifys", func(group *ghttp.RouterGroup) {
+				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Bind(
+					new(notify.Notify),
 				)
 			})
 
@@ -59,13 +67,6 @@ var (
 					r.Response.Writef("Welcome %s! <a href='/logout'>Logout</a>", user)
 				})
 
-			})
-
-			s.Group("/notifys", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
-				group.Bind(
-					new(notify.Notify),
-				)
 			})
 
 			s.Run()
