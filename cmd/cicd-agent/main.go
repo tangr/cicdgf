@@ -19,8 +19,8 @@ import (
 )
 
 type WsAgentSend struct {
-	Items      []WsAgentSendMap
-	timeoutSec int
+	Items      []WsAgentSendMap `json:"items"`
+	TimeoutSec int              `json:"timeoutSec"`
 }
 
 type WsAgentSendMap struct {
@@ -121,7 +121,7 @@ func (s *agentCICD) PrepareAgentStatusUpdate() WsAgentSend {
 	var agentsList AgentsList
 	var agentSent = WsAgentSend{
 		Items:      make([]WsAgentSendMap, 0),
-		timeoutSec: 30,
+		TimeoutSec: 30,
 	}
 	// var agentSentMap = WsAgentSendMap{}
 
@@ -375,7 +375,7 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
 	// var sendJson WsAgentSend
 	var sendJson = WsAgentSend{
 		Items:      make([]WsAgentSendMap, 0),
-		timeoutSec: 30, // 设置默认超时时间，可根据需要调整
+		TimeoutSec: 30, // 设置默认超时时间，可根据需要调整
 	}
 
 	recvData := *recvJson
@@ -434,7 +434,7 @@ func (s *agentCICD) AgentRun() {
 			agentStatus := s.PrepareAgentStatusUpdate()
 
 			// 发送Agent状态到服务器
-			g.Log().Infof(ctx, "发送Agent状态更新：%v", agentStatus)
+			g.Log().Infof(ctx, "发送Agent状态更新：%+v", agentStatus)
 			response, err := client.Post(ctx, apiUrl+"/api/notifys/v1", agentStatus)
 			if err != nil {
 				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
