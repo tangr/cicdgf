@@ -54,8 +54,8 @@ var (
 	maxrunningjobs int                    = g.Cfg().MustGet(ctx, "agent.MaxRunningJobs").Int()
 	runningJobs    map[int]*gproc.Process = make(map[int]*gproc.Process)
 	envPrefix      string                 = g.Cfg().MustGet(ctx, "agent.EnvPrefix").String()
-	agentInclude   string                 = g.Cfg().MustGet(ctx, "agent.Include").String()
 	agents         AgentsList             = make(AgentsList, 0)
+	// agentInclude   string                 = g.Cfg().MustGet(ctx, "agent.Include").String()
 )
 
 type AgentsMap struct {
@@ -85,7 +85,7 @@ func (s *agentCICD) GetAgentsList(isreload bool) AgentsList {
 
 	if agentsStr != "" {
 		if err := gjson.DecodeTo(agentsStr, &agentsList); err != nil {
-			g.Log().Errorf(ctx, "%s decode failed. %s", err)
+			g.Log().Errorf(ctx, "decode failed. %s", err)
 		}
 		newagents = append(newagents, agentsList...)
 	}
