@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -15,12 +14,8 @@ import (
 	"github.com/gofrs/flock"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/net/ghttp"
-	"github.com/gogf/gf/v2/os/gproc"
-
 	"github.com/gogf/gf/v2/os/gfile"
-
-	"github.com/gorilla/websocket"
+	"github.com/gogf/gf/v2/os/gproc"
 )
 
 type WsAgentSend []WsAgentSendMap
@@ -52,8 +47,7 @@ type agentCICD struct{}
 
 var (
 	ctx                                   = context.Background()
-	wsUrl                                 = g.Cfg().MustGet(ctx, "agent.WsUrl").String()
-	ApiUrl                                = g.Cfg().MustGet(ctx, "agent.ApiUrl").String()
+	apiUrl                                = g.Cfg().MustGet(ctx, "agent.ApiUrl").String()
 	syncInterval                          = g.Cfg().MustGet(ctx, "agent.SyncInterval").Int32()
 	dataPathDir                           = g.Cfg().MustGet(ctx, "agent.DataPathDir").String()
 	jobFlash                              = g.Cfg().MustGet(ctx, "agent.JobFlash").String()
@@ -61,7 +55,6 @@ var (
 	runningJobs    map[int]*gproc.Process = make(map[int]*gproc.Process)
 	envPrefix      string                 = g.Cfg().MustGet(ctx, "agent.EnvPrefix").String()
 	agentInclude   string                 = g.Cfg().MustGet(ctx, "agent.Include").String()
-	wsAgentSend    chan WsAgentSend       = make(chan WsAgentSend)
 	agents         AgentsList             = make(AgentsList, 0)
 )
 
@@ -76,8 +69,6 @@ type JobMeta struct {
 }
 
 type AgentsList []AgentsMap
-
-// var agents AgentsList = make(AgentsList, 0)
 
 func main() {
 	AgentCICD.AgentRun()
@@ -123,25 +114,18 @@ func (s *agentCICD) HanleIncludeConfig(pattern string) []string {
 	return filenames
 }
 
-func (s *agentCICD) SendJson() WsAgentSend {
-
+func (s *agentCICD) PrepareAgentStatusUpdate() WsAgentSend {
 	var agentsList AgentsList
+	var agentSent = WsAgentSend{}
+	var agentSentMap = WsAgentSendMap{}
 
-	select {
-	case msg := <-wsAgentSend:
-		return msg
-	default:
-		var agentSent = WsAgentSend{}
-		var agentSentMap = WsAgentSendMap{}
-		agentsList = s.GetAgentsList(false)
-		for _, agent := range agentsList {
-			agentSentMap.AgentId = agent.ID
-			agentSentMap.AgentName = agent.Name
-			agentSent = append(agentSent, agentSentMap)
-		}
-		return agentSent
+	agentsList = s.GetAgentsList(false)
+	for _, agent := range agentsList {
+		agentSentMap.AgentId = agent.ID
+		agentSentMap.AgentName = agent.Name
+		agentSent = append(agentSent, agentSentMap)
 	}
-
+	return agentSent
 }
 
 func (s *agentCICD) GetExecutable(scriptbody string) string {
@@ -180,9 +164,6 @@ func (s *agentCICD) ReadFile(path string) string {
 		g.Log().Debug(ctx, "file not exist: ", path)
 		return ""
 	}
-	// if _, err := os.Stat(path); os.IsNotExist(err) {
-	// 	return ""
-	// }
 	content := gfile.GetContents(path)
 	return content
 }
@@ -215,7 +196,7 @@ func (s *agentCICD) GetStatus(jobId int) string {
 	fileLock := flock.New(jobPathscriptJson)
 	err := fileLock.RLock()
 	if err != nil {
-		g.Log().Error(err)
+		g.Log().Error(ctx, err)
 	}
 	jobJson := s.ReadFile(jobPathscriptJson)
 	fileLock.Unlock()
@@ -278,7 +259,6 @@ func (s *agentCICD) RunCommand(jobId int, runCommand string, scriptEnvs []string
 		}
 		delete(runningJobs, jobId)
 	}
-
 }
 
 func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
@@ -378,7 +358,7 @@ func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
 	return sendMap
 }
 
-func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) {
+func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
 	var sendJson WsAgentSend
 	recvData := *recvJson
 	for _, jobv := range recvData {
@@ -396,120 +376,74 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) {
 				continue
 			}
 		}
-		// g.Log().Debugf("recvjson: %+v", jobv)
 		g.Log().Debugf(ctx, "recvjson: %#v", jobv)
 		var sendMap = s.HandleJob(&jobv)
-		g.Log().Debugf(ctx, "sendjson: %#v", sendJson)
+		g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
 		sendJson = append(sendJson, *sendMap)
 	}
 
-	if len(sendJson) > 0 {
-		wsAgentSend <- sendJson
-	}
+	return sendJson
 }
 
 func (s *agentCICD) AgentRun() {
 	if err := gfile.Mkdir(dataPathDir); err != nil {
 		g.Log().Error(ctx, err)
 		panic(err)
-		// os.Exit(1)
 	}
 
 	interrupt := make(chan os.Signal, 1)
-	// signal.Notify(interrupt, os.Interrupt, syscall.SIGUSR1)
 	signal.Notify(interrupt, os.Interrupt)
-	// signal.Notify(interrupt, syscall.SIGTERM)
 	reload := make(chan os.Signal, 1)
 	signal.Notify(reload, syscall.SIGUSR1)
 
-	var recvJson = new(WsServerSend)
+	// 创建HTTP客户端
+	client := g.Client()
+	client.SetTimeout(10 * time.Second)
 
-	client := ghttp.NewWebSocketClient()
-	client.HandshakeTimeout = time.Second    // 设置超时时间
-	client.Proxy = http.ProxyFromEnvironment // 设置代理
+	ticker := time.NewTicker(time.Duration(syncInterval) * time.Second)
+	defer ticker.Stop()
 
-	// for i := 0; i < 10; i++ {
 	for {
-		// time.Sleep(time.Second)
 		select {
 		case <-interrupt:
-			g.Log().Info(ctx, "interrupt2")
-			os.Exit(1)
-		case <-time.After(time.Second):
-		}
+			g.Log().Info(ctx, "程序被中断，正在退出...")
+			return
+		case <-reload:
+			g.Log().Info(ctx, "正在重新加载配置...")
+			s.GetAgentsList(true)
+		case <-ticker.C:
+			// 准备要发送的Agent状态数据
+			agentStatus := s.PrepareAgentStatusUpdate()
 
-		// conn, _, err := client.Dial("ws://127.0.0.1:8070/wsv1/wsci", nil)
-		conn, _, err := client.Dial(wsUrl, nil)
-		if err != nil {
-			// panic(err)
-			g.Log().Error(ctx, "dial:", err)
-			continue
-		}
-		defer conn.Close()
-
-		done := make(chan struct{})
-
-		go func() {
-			defer close(done)
-			for {
-				err := conn.ReadJSON(&recvJson)
-				if err != nil {
-					time.Sleep(time.Second)
-					g.Log().Error(ctx, "read:", err)
-					g.Log().Infof(ctx, "recv+v: %+v", recvJson)
-					// continue
-					break
-					// return
-				}
-				// g.Log().Infof("recv+v: %+v", recvJson)
-
-				newjobs, _ := json.Marshal(recvJson)
-				g.Log().Infof(ctx, "recvjson: %s", string(newjobs))
-				s.HandleRecvJson(recvJson)
+			// 发送Agent状态到服务器
+			g.Log().Infof(ctx, "发送Agent状态更新：%v", agentStatus)
+			response, err := client.Post(ctx, apiUrl+"/agent/status", agentStatus)
+			if err != nil {
+				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
+				continue
 			}
-		}()
 
-		ticker := time.NewTicker(time.Duration(1000000000 * syncInterval))
-		defer ticker.Stop()
+			// 解析服务器响应
+			var serverTasks WsServerSend
+			res := response.ReadAll()
+			err = json.Unmarshal(res, &serverTasks)
+			if err != nil {
+				g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
+				continue
+			}
 
-	L:
-		for {
-			// T:
-			select {
-			case <-done:
-				break L
-			case <-ticker.C:
-				// g.Log().Info("*********************************")
-				sendJson := s.SendJson()
-				err := conn.WriteJSON(sendJson)
-				if err != nil {
-					time.Sleep(time.Second)
-					g.Log().Error(ctx, "write:", err)
-					g.Log().Infof(ctx, "send+v: %+v", sendJson)
-					// continue
-					break
-					// return
+			// 处理服务器下发的任务
+			if len(serverTasks) > 0 {
+				g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
+				result := s.HandleRecvJson(&serverTasks)
+
+				// 上报任务处理结果
+				if len(result) > 0 {
+					_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
+					if err != nil {
+						g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
+					}
 				}
-				// g.Log().Infof("send+v: %+v", sendJson)
-				// g.Log().Infof("send#v: %#v", sendJson)
-				newjobs, _ := json.Marshal(sendJson)
-				g.Log().Infof(ctx, "sendjson: %s", string(newjobs))
-				// g.Log().Info("###################################")
-			case <-interrupt:
-				g.Log().Info(ctx, "interrupt1")
-				err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-				if err != nil {
-					g.Log().Warningf(ctx, "write close:", err)
-					return
-				}
-				select {
-				case <-done:
-				case <-time.After(time.Second):
-				}
-				return
-			case <-reload:
-				g.Log().Info(ctx, "reload")
-				s.GetAgentsList(true)
 			}
 		}
 	}
