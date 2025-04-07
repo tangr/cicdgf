@@ -18,7 +18,10 @@ import (
 	"github.com/gogf/gf/v2/os/gproc"
 )
 
-type WsAgentSend []WsAgentSendMap
+type WsAgentSend struct {
+	Items      []WsAgentSendMap
+	timeoutSec int
+}
 
 type WsAgentSendMap struct {
 	AgentId   int    `json:"agentId"`
@@ -116,14 +119,24 @@ func (s *agentCICD) HanleIncludeConfig(pattern string) []string {
 
 func (s *agentCICD) PrepareAgentStatusUpdate() WsAgentSend {
 	var agentsList AgentsList
-	var agentSent = WsAgentSend{}
-	var agentSentMap = WsAgentSendMap{}
+	var agentSent = WsAgentSend{
+		Items:      make([]WsAgentSendMap, 0),
+		timeoutSec: 30,
+	}
+	// var agentSentMap = WsAgentSendMap{}
 
 	agentsList = s.GetAgentsList(false)
 	for _, agent := range agentsList {
-		agentSentMap.AgentId = agent.ID
-		agentSentMap.AgentName = agent.Name
-		agentSent = append(agentSent, agentSentMap)
+		agentSentMap := WsAgentSendMap{
+			AgentId:   agent.ID,
+			AgentName: agent.Name,
+			// JobId, JobStatus, JobOutput 可以根据需要设置默认值或保持为零值
+		}
+		agentSent.Items = append(agentSent.Items, agentSentMap)
+
+		// agentSentMap.AgentId = agent.ID
+		// agentSentMap.AgentName = agent.Name
+		// agentSent = append(agentSent, agentSentMap)
 	}
 	return agentSent
 }
@@ -359,7 +372,12 @@ func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
 }
 
 func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
-	var sendJson WsAgentSend
+	// var sendJson WsAgentSend
+	var sendJson = WsAgentSend{
+		Items:      make([]WsAgentSendMap, 0),
+		timeoutSec: 30, // 设置默认超时时间，可根据需要调整
+	}
+
 	recvData := *recvJson
 	for _, jobv := range recvData {
 		if jobv.ErrMsg != "" {
@@ -379,7 +397,7 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
 		g.Log().Debugf(ctx, "recvjson: %#v", jobv)
 		var sendMap = s.HandleJob(&jobv)
 		g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
-		sendJson = append(sendJson, *sendMap)
+		sendJson.Items = append(sendJson.Items, *sendMap)
 	}
 
 	return sendJson
@@ -417,7 +435,7 @@ func (s *agentCICD) AgentRun() {
 
 			// 发送Agent状态到服务器
 			g.Log().Infof(ctx, "发送Agent状态更新：%v", agentStatus)
-			response, err := client.Post(ctx, apiUrl+"/agent/status", agentStatus)
+			response, err := client.Post(ctx, apiUrl+"/api/notifys/v1", agentStatus)
 			if err != nil {
 				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
 				continue
@@ -426,6 +444,7 @@ func (s *agentCICD) AgentRun() {
 			// 解析服务器响应
 			var serverTasks WsServerSend
 			res := response.ReadAll()
+			g.Log().Debug(ctx, res)
 			err = json.Unmarshal(res, &serverTasks)
 			if err != nil {
 				g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
@@ -438,7 +457,7 @@ func (s *agentCICD) AgentRun() {
 				result := s.HandleRecvJson(&serverTasks)
 
 				// 上报任务处理结果
-				if len(result) > 0 {
+				if len(result.Items) > 0 {
 					_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
 					if err != nil {
 						g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
