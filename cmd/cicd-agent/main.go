@@ -433,9 +433,13 @@ func (s *agentCICD) AgentRun() {
 			// 准备要发送的Agent状态数据
 			agentStatus := s.PrepareAgentStatusUpdate()
 
+			header := g.MapStrStr{
+				"Content-Type": "application/json",
+			}
+
 			// 发送Agent状态到服务器
 			g.Log().Infof(ctx, "发送Agent状态更新：%+v", agentStatus)
-			response, err := client.Post(ctx, apiUrl+"/api/notifys/v1", agentStatus)
+			response, err := client.Header(header).Post(ctx, apiUrl+"/notifys/v1", agentStatus)
 			if err != nil {
 				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
 				continue
