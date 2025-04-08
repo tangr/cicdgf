@@ -31,7 +31,12 @@ type WsAgentSendMap struct {
 	JobOutput string `json:"jobOutput"`
 }
 
-type WsServerSend []WsServerSendMap
+// type WsServerSend []WsServerSendMap
+type WsServerSend struct {
+	Code    int             `json:"code"`
+	Message string          `json:"message"`
+	Data    WsServerSendMap `json:"data"`
+}
 
 type WsServerSendMap struct {
 	AgentId   int               `json:"agentId"`
@@ -41,8 +46,20 @@ type WsServerSendMap struct {
 	Body      string            `json:"scriptBody"`
 	Envs      map[string]string `json:"scriptEnvs"`
 	Args      string            `json:"scriptArgs"`
-	ErrMsg    string            `json:"errmsg"`
+
+	// ErrMsg    string            `json:"errmsg"`
 }
+
+// type WsServerSendMap struct {
+// 	AgentId   int               `json:"agentId"`
+// 	AgentName string            `json:"agentName"`
+// 	JobId     int               `json:"jobId"`
+// 	JobStatus string            `json:"jobStatus"`
+// 	Body      string            `json:"scriptBody"`
+// 	Envs      map[string]string `json:"scriptEnvs"`
+// 	Args      string            `json:"scriptArgs"`
+// 	ErrMsg    string            `json:"errmsg"`
+// }
 
 var AgentCICD = agentCICD{}
 
@@ -379,26 +396,44 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
 	}
 
 	recvData := *recvJson
-	for _, jobv := range recvData {
-		if jobv.ErrMsg != "" {
-			g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
-			continue
-		}
-		if jobv.JobId == 0 || jobv.JobStatus == "" {
-			continue
-		}
-		g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
-		if len(runningJobs) >= maxrunningjobs {
-			jobId := jobv.JobId
-			if _, ok := runningJobs[jobId]; !ok {
-				continue
-			}
-		}
-		g.Log().Debugf(ctx, "recvjson: %#v", jobv)
-		var sendMap = s.HandleJob(&jobv)
-		g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
-		sendJson.Items = append(sendJson.Items, *sendMap)
+	jobv := recvData.Data
+	// for _, jobv := range recvData.Data {
+	// 	if jobv.ErrMsg != "" {
+	// 		g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
+	// 		continue
+	// 	}
+	// 	if jobv.JobId == 0 || jobv.JobStatus == "" {
+	// 		continue
+	// 	}
+	// 	g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
+	// 	if len(runningJobs) >= maxrunningjobs {
+	// 		jobId := jobv.JobId
+	// 		if _, ok := runningJobs[jobId]; !ok {
+	// 			continue
+	// 		}
+	// 	}
+	// 	g.Log().Debugf(ctx, "recvjson: %#v", jobv)
+	// 	var sendMap = s.HandleJob(&jobv)
+	// 	g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
+	// 	sendJson.Items = append(sendJson.Items, *sendMap)
+	// }
+
+	// if jobv.ErrMsg != "" {
+	// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
+	// }
+	if jobv.JobId == 0 || jobv.JobStatus == "" {
 	}
+	g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
+	if len(runningJobs) >= maxrunningjobs {
+		jobId := jobv.JobId
+		if _, ok := runningJobs[jobId]; !ok {
+			g.Log().Error(ctx, ok)
+		}
+	}
+	g.Log().Debugf(ctx, "recvjson: %#v", jobv)
+	var sendMap = s.HandleJob(&jobv)
+	g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
+	sendJson.Items = append(sendJson.Items, *sendMap)
 
 	return sendJson
 }
@@ -459,17 +494,29 @@ func (s *agentCICD) AgentRun() {
 				continue
 			}
 
-			// 处理服务器下发的任务
-			if len(serverTasks) > 0 {
-				g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
-				result := s.HandleRecvJson(&serverTasks)
+			// // 处理服务器下发的任务
+			// if len(serverTasks) > 0 {
+			// 	g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
+			// 	result := s.HandleRecvJson(&serverTasks)
 
-				// 上报任务处理结果
-				if len(result.Items) > 0 {
-					_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
-					if err != nil {
-						g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
-					}
+			// 	// 上报任务处理结果
+			// 	if len(result.Items) > 0 {
+			// 		_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
+			// 		if err != nil {
+			// 			g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
+			// 		}
+			// 	}
+			// }
+
+			// 处理服务器下发的任务
+			g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
+			result := s.HandleRecvJson(&serverTasks)
+
+			// 上报任务处理结果
+			if len(result.Items) > 0 {
+				_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
+				if err != nil {
+					g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
 				}
 			}
 		}
