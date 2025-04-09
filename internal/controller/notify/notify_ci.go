@@ -11,8 +11,8 @@ import (
 
 func SyncNewCIJob(ctx context.Context) {
 	type NewJobBuild struct {
-		ID      int `json:"jobid"`
-		AgentId int `json:"agent_id"`
+		ID      uint `json:"jobid"`
+		AgentId uint `json:"agent_id"`
 	}
 	var newJobs = new([]NewJobBuild)
 
@@ -38,10 +38,10 @@ func SyncNewCIJob(ctx context.Context) {
 			expireSecs := int64(10 * 60)
 
 			for _, newJob := range *newJobs {
-				agentId := strconv.Itoa(newJob.AgentId)
-				jobId := strconv.Itoa(newJob.ID)
+				agentId := newJob.AgentId
+				jobId := newJob.ID
 
-				ciAgentKey := "ciagent:" + agentId
+				ciAgentKey := "ciagent:" + strconv.FormatUint(uint64(agentId), 10)
 				count, err := g.Redis().Exists(ctx, ciAgentKey)
 				if err != nil {
 					g.Log().Fatal(ctx, err)

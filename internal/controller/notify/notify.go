@@ -3,6 +3,7 @@ package notify
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 )
 
 type NotifyItem struct {
-	AgentId   string `v:"required" json:"agentId"   dc:"agentId"`
+	AgentId   uint   `v:"required" json:"agentId"   dc:"agentId"`
 	AgentName string `v:"required" json:"agentName" dc:"agentName"`
 	// JobId     int    `v:"required" json:"jobId"     dc:"jobId"`
 	// JobStatus string `v:"required" json:"jobStatus" dc:"jobStatus"`
@@ -30,13 +31,13 @@ type Notify struct{}
 
 var (
 	// Store agent notification status
-	agentNotifications = make(map[string]string)
+	agentNotifications = make(map[uint]uint)
 	// Store channels for waiting requests
-	notificationChannelsMap = make(map[string]chan string)
+	notificationChannelsMap = make(map[uint]chan uint)
 	mutex                   = sync.RWMutex{}
 )
 
-func AddNotification(agentId, jobId string) {
+func AddNotification(agentId, jobId uint) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -94,15 +95,15 @@ func getTimeout(requestedTimeout int) int {
 	return 30
 }
 
-func collectAgentIds(items []NotifyItem) []string {
-	agentIds := make([]string, 0, len(items))
+func collectAgentIds(items []NotifyItem) []uint {
+	agentIds := make([]uint, 0, len(items))
 	for _, item := range items {
 		agentIds = append(agentIds, item.AgentId)
 	}
 	return agentIds
 }
 
-func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds []string) (*ghttp.Response, bool, error) {
+func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds []uint) (*ghttp.Response, bool, error) {
 	mutex.RLock()
 	defer mutex.RUnlock()
 
@@ -124,7 +125,7 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 		}
 
 		// Check if agent exists
-		ciAgentKey := "ciagent:" + agentId
+		ciAgentKey := "ciagent:" + strconv.FormatUint(uint64(agentId), 10)
 		count, redisErr := g.Redis().Exists(ctx, ciAgentKey)
 		if redisErr != nil {
 			g.Log().Error(ctx, "Redis error:", redisErr)
@@ -132,6 +133,7 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 			return nil, true, fmt.Errorf("redis exists operation failed: %w", redisErr)
 		}
 
+		// g.Log().Info(ctx, "count: %d", count)
 		if count == 0 {
 			g.Log().Error(ctx, "ciAgentKey:", ciAgentKey)
 			r.Response.Status = 404
@@ -150,13 +152,13 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 	return nil, false, nil
 }
 
-func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []string, timeoutDuration time.Duration) (*ghttp.Response, error) {
+func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []uint, timeoutDuration time.Duration) (*ghttp.Response, error) {
 	ctxTimeout, cancel := context.WithTimeout(ctx, timeoutDuration)
 	defer cancel()
 
 	done := make(chan struct {
-		agentId string
-		jobId   string
+		agentId uint
+		jobId   uint
 	}, 1)
 
 	// Register listening channels
@@ -186,18 +188,18 @@ func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []string
 	return nil, nil
 }
 
-func registerNotificationChannels(agentIds []string) {
+func registerNotificationChannels(agentIds []uint) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	for _, agentId := range agentIds {
 		if _, exists := notificationChannelsMap[agentId]; !exists {
-			notificationChannelsMap[agentId] = make(chan string, 1)
+			notificationChannelsMap[agentId] = make(chan uint, 1)
 		}
 	}
 }
 
-func cleanupNotificationChannels(agentIds []string) {
+func cleanupNotificationChannels(agentIds []uint) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -206,18 +208,18 @@ func cleanupNotificationChannels(agentIds []string) {
 	}
 }
 
-func startListenerGoroutines(ctxTimeout context.Context, agentIds []string, done chan<- struct {
-	agentId string
-	jobId   string
+func startListenerGoroutines(ctxTimeout context.Context, agentIds []uint, done chan<- struct {
+	agentId uint
+	jobId   uint
 }) {
 	for _, agentId := range agentIds {
-		go func(id string) {
+		go func(id uint) {
 			select {
 			case jobId := <-notificationChannelsMap[id]:
 				select {
 				case done <- struct {
-					agentId string
-					jobId   string
+					agentId uint
+					jobId   uint
 				}{agentId: id, jobId: jobId}:
 				default:
 				}
