@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -91,17 +90,6 @@ func (s *agentCICD) GetAgentsList(isreload bool) AgentsList {
 		s.WriteFile(jobFlashPath, string(jobFlashStatus))
 	}
 	return agents
-}
-
-func (s *agentCICD) HanleIncludeConfig(pattern string) []string {
-	var filenames []string
-	files, err := filepath.Glob(pattern)
-	if err != nil {
-		g.Log().Error(ctx, err)
-		panic(err)
-	}
-	filenames = append(filenames, files...)
-	return filenames
 }
 
 func (s *agentCICD) PrepareAgentStatusUpdate() WsAgentSend {
