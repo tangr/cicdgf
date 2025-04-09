@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"cicdgf/internal/model"
+
 	"github.com/gofrs/flock"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
@@ -23,43 +25,11 @@ type WsAgentSend struct {
 	TimeoutSec int              `json:"timeoutSec"`
 }
 
-type WsAgentSendMap struct {
-	AgentId   int    `json:"agentId"`
-	AgentName string `json:"agentName"`
-	JobId     int    `json:"jobId"`
-	JobStatus string `json:"jobStatus"`
-	JobOutput string `json:"jobOutput"`
-}
+type WsAgentSendMap = model.WsAgentSendMap
 
-// type WsServerSend []WsServerSendMap
-type WsServerSend struct {
-	Code    int             `json:"code"`
-	Message string          `json:"message"`
-	Data    WsServerSendMap `json:"data"`
-}
+type WsServerSend = model.WsServerSend
 
-type WsServerSendMap struct {
-	AgentId   int               `json:"agentId"`
-	AgentName string            `json:"agentName"`
-	JobId     int               `json:"jobId"`
-	JobStatus string            `json:"jobStatus"`
-	Body      string            `json:"scriptBody"`
-	Envs      map[string]string `json:"scriptEnvs"`
-	Args      string            `json:"scriptArgs"`
-
-	// ErrMsg    string            `json:"errmsg"`
-}
-
-// type WsServerSendMap struct {
-// 	AgentId   int               `json:"agentId"`
-// 	AgentName string            `json:"agentName"`
-// 	JobId     int               `json:"jobId"`
-// 	JobStatus string            `json:"jobStatus"`
-// 	Body      string            `json:"scriptBody"`
-// 	Envs      map[string]string `json:"scriptEnvs"`
-// 	Args      string            `json:"scriptArgs"`
-// 	ErrMsg    string            `json:"errmsg"`
-// }
+type WsServerSendMap = model.WsServerSendMap
 
 var AgentCICD = agentCICD{}
 
