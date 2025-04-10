@@ -297,8 +297,8 @@ func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
 		}
 	}
 	oldJobStatus := s.GetStatus(jobId)
-	g.Log().Error(ctx, 3333)
-	g.Log().Errorf(ctx, oldJobStatus)
+	g.Log().Debug(ctx, 3333)
+	g.Log().Debugf(ctx, oldJobStatus)
 	if oldJobStatus == "success" || oldJobStatus == "failed" {
 		sendMap.JobStatus = oldJobStatus
 		jobPath := dataPathDir + strconv.Itoa(jobId)
@@ -312,8 +312,8 @@ func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
 			g.Log().Error(ctx, jobId, err)
 		}
 	}
-	g.Log().Error(ctx, oldJobStatus)
-	g.Log().Error(ctx, jobStatus)
+	g.Log().Debug(ctx, oldJobStatus)
+	g.Log().Debug(ctx, jobStatus)
 	jobPath := dataPathDir + strconv.Itoa(jobId)
 	jobPathOutput := jobPath + ".output"
 	if jobv.Body != "" {
