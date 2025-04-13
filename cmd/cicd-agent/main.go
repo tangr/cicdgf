@@ -85,8 +85,9 @@ func (s *agentCICD) GetAgentsList(isreload bool) AgentsList {
 		if err != nil {
 			g.Log().Error(ctx, err)
 		}
-		g.Log().Info(ctx, jobFlashStatus)
+		g.Log().Info(ctx, "jobFlashStatus: ", jobFlashStatus)
 		jobFlashPath := dataPathDir + jobFlash
+		g.Log().Debug(ctx, "jobFlashPath: ", jobFlashPath)
 		s.WriteFile(jobFlashPath, string(jobFlashStatus))
 	}
 	return agents
@@ -129,7 +130,7 @@ func (s *agentCICD) GetExecutable(scriptbody string) string {
 }
 
 func (s *agentCICD) WriteFile(path string, content string) error {
-	g.Log().Debug(ctx, "Write file: ", path)
+	g.Log().Error(ctx, "Write file: ", path)
 	if err := gfile.PutContents(path, content); err != nil {
 		g.Log().Error(ctx, err)
 		return err
@@ -138,6 +139,7 @@ func (s *agentCICD) WriteFile(path string, content string) error {
 }
 
 func FileExists(name string) bool {
+	g.Log().Debug(ctx, "FileExists: ", name)
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
 			return false
@@ -256,7 +258,7 @@ func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
 	sendMap.AgentId = jobv.AgentId
 	sendMap.AgentName = jobv.AgentName
 	sendMap.JobId = jobId
-	g.Log().Error(ctx, jobStatus)
+	g.Log().Error(ctx, "HandleJob:jobStatus: ", jobStatus)
 	if jobStatus == "success" || jobStatus == "failed" {
 		sendMap.JobStatus = jobStatus
 		jobPath := dataPathDir + strconv.Itoa(jobId)
@@ -296,9 +298,11 @@ func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
 			return sendMap
 		}
 	}
+	g.Log().Debug(ctx, 2222)
+	g.Log().Debug(ctx, "HandleJob:jobId: %d", jobId)
 	oldJobStatus := s.GetStatus(jobId)
 	g.Log().Debug(ctx, 3333)
-	g.Log().Debugf(ctx, oldJobStatus)
+	g.Log().Debugf(ctx, "oldJobStatus: %s", oldJobStatus)
 	if oldJobStatus == "success" || oldJobStatus == "failed" {
 		sendMap.JobStatus = oldJobStatus
 		jobPath := dataPathDir + strconv.Itoa(jobId)
@@ -312,8 +316,8 @@ func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
 			g.Log().Error(ctx, jobId, err)
 		}
 	}
-	g.Log().Debug(ctx, oldJobStatus)
-	g.Log().Debug(ctx, jobStatus)
+	g.Log().Debugf(ctx, "oldJobStatus2: %s", oldJobStatus)
+	g.Log().Debug(ctx, "jobStatus: ", jobStatus)
 	jobPath := dataPathDir + strconv.Itoa(jobId)
 	jobPathOutput := jobPath + ".output"
 	if jobv.Body != "" {
