@@ -130,7 +130,7 @@ func (s *agentCICD) GetExecutable(scriptbody string) string {
 }
 
 func (s *agentCICD) WriteFile(path string, content string) error {
-	g.Log().Error(ctx, "Write file: ", path)
+	g.Log().Debug(ctx, "Write file: ", path)
 	if err := gfile.PutContents(path, content); err != nil {
 		g.Log().Error(ctx, err)
 		return err
@@ -149,7 +149,7 @@ func FileExists(name string) bool {
 }
 
 func (s *agentCICD) ReadFile(path string) string {
-	g.Log().Error(ctx, "Read file: ", path)
+	g.Log().Debug(ctx, "Read file: ", path)
 	if !FileExists(path) {
 		g.Log().Debug(ctx, "file not exist: ", path)
 		return ""
