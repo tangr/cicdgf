@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/flock"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/gclient"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gproc"
 )
@@ -45,6 +46,7 @@ var (
 	envPrefix      string                 = g.Cfg().MustGet(ctx, "agent.EnvPrefix").String()
 	agents         AgentsList             = make(AgentsList, 0)
 	// agentInclude   string                 = g.Cfg().MustGet(ctx, "agent.Include").String()
+
 )
 
 type AgentsMap struct {
@@ -58,6 +60,19 @@ type JobMeta struct {
 }
 
 type AgentsList []AgentsMap
+
+var (
+	client *gclient.Client
+)
+
+func init() {
+	client = g.Client()
+	client.SetTimeout(100 * time.Second)
+	header := g.MapStrStr{
+		"Content-Type": "application/json",
+	}
+	client.SetHeaderMap(header)
+}
 
 func main() {
 	AgentCICD.AgentRun()
@@ -412,8 +427,12 @@ func (s *agentCICD) AgentRun() {
 	signal.Notify(reload, syscall.SIGUSR1)
 
 	// 创建HTTP客户端
-	client := g.Client()
-	client.SetTimeout(10 * time.Second)
+	// client := g.Client()
+	// client.SetTimeout(100 * time.Second)
+	// header := g.MapStrStr{
+	// 	"Content-Type": "application/json",
+	// }
+	// client.SetHeaderMap(header)
 
 	ticker := time.NewTicker(time.Duration(syncInterval) * time.Second)
 	defer ticker.Stop()
@@ -430,13 +449,9 @@ func (s *agentCICD) AgentRun() {
 			// 准备要发送的Agent状态数据
 			agentStatus := s.PrepareAgentStatusUpdate()
 
-			header := g.MapStrStr{
-				"Content-Type": "application/json",
-			}
-
 			// 发送Agent状态到服务器
 			g.Log().Infof(ctx, "发送Agent状态更新：%+v", agentStatus)
-			response, err := client.Header(header).Post(ctx, apiUrl+"/notifys/v1", agentStatus)
+			response, err := client.Post(ctx, apiUrl+"/notifys/v1", agentStatus)
 			if err != nil {
 				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
 				continue
