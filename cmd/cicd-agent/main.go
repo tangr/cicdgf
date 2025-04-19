@@ -398,6 +398,7 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
 	// if jobv.ErrMsg != "" {
 	// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
 	// }
+	g.Log().Debug(ctx, "HandleRecvJson jobv: %+v", jobv)
 	if jobv.JobId == 0 || jobv.JobStatus == "" {
 	}
 	g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
