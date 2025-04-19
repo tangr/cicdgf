@@ -114,9 +114,11 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 			r.Response.WriteJson(g.Map{
 				"code":    0,
 				"message": "Notification found",
-				"data": g.Map{
-					"agentId": agentId,
-					"jobId":   jobId,
+				"data": []g.Map{
+					{
+						"agentId": agentId,
+						"jobId":   jobId,
+					},
 				},
 			})
 
@@ -176,9 +178,11 @@ func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []uint, 
 		r.Response.WriteJson(g.Map{
 			"code":    0,
 			"message": "Notification received",
-			"data": g.Map{
-				"agentId": notification.agentId,
-				"jobId":   notification.jobId,
+			"data": []g.Map{
+				{
+					"agentId": notification.agentId,
+					"jobId":   notification.jobId,
+				},
 			},
 		})
 	case <-ctxTimeout.Done():

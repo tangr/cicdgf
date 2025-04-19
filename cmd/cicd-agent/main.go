@@ -373,45 +373,46 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
 	}
 
 	recvData := *recvJson
-	jobv := recvData.Data
-	// for _, jobv := range recvData.Data {
-	// 	if jobv.ErrMsg != "" {
-	// 		g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
-	// 		continue
-	// 	}
-	// 	if jobv.JobId == 0 || jobv.JobStatus == "" {
-	// 		continue
-	// 	}
-	// 	g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
-	// 	if len(runningJobs) >= maxrunningjobs {
-	// 		jobId := jobv.JobId
-	// 		if _, ok := runningJobs[jobId]; !ok {
-	// 			continue
-	// 		}
-	// 	}
-	// 	g.Log().Debugf(ctx, "recvjson: %#v", jobv)
-	// 	var sendMap = s.HandleJob(&jobv)
-	// 	g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
-	// 	sendJson.Items = append(sendJson.Items, *sendMap)
-	// }
+	// jobv := recvData.Data
+	for _, jobv := range recvData.Data {
+		// if jobv.ErrMsg != "" {
+		// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
+		// 	continue
+		// }
+		if jobv.JobId == 0 || jobv.JobStatus == "" {
+			continue
+		}
+		g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
+		if len(runningJobs) >= maxrunningjobs {
+			jobId := jobv.JobId
+			if _, ok := runningJobs[jobId]; !ok {
+				continue
+			}
+		}
+		g.Log().Debugf(ctx, "recvjson: %#v", jobv)
+		var sendMap = s.HandleJob(&jobv)
+		g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
+		sendJson.Items = append(sendJson.Items, *sendMap)
+	}
 
 	// if jobv.ErrMsg != "" {
 	// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
 	// }
-	g.Log().Debug(ctx, "HandleRecvJson jobv: %+v", jobv)
-	if jobv.JobId == 0 || jobv.JobStatus == "" {
-	}
-	g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
-	if len(runningJobs) >= maxrunningjobs {
-		jobId := jobv.JobId
-		if _, ok := runningJobs[jobId]; !ok {
-			g.Log().Error(ctx, ok)
-		}
-	}
-	g.Log().Debugf(ctx, "recvjson: %#v", jobv)
-	var sendMap = s.HandleJob(&jobv)
-	g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
-	sendJson.Items = append(sendJson.Items, *sendMap)
+
+	// g.Log().Debug(ctx, "HandleRecvJson jobv: %+v", jobv)
+	// if jobv.JobId == 0 || jobv.JobStatus == "" {
+	// }
+	// g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
+	// if len(runningJobs) >= maxrunningjobs {
+	// 	jobId := jobv.JobId
+	// 	if _, ok := runningJobs[jobId]; !ok {
+	// 		g.Log().Error(ctx, ok)
+	// 	}
+	// }
+	// g.Log().Debugf(ctx, "recvjson: %#v", jobv)
+	// var sendMap = s.HandleJob(&jobv)
+	// g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
+	// sendJson.Items = append(sendJson.Items, *sendMap)
 
 	return sendJson
 }

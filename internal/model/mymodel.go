@@ -14,9 +14,9 @@ type WsAgentSend struct {
 }
 
 type WsServerSend struct {
-	Code    int             `json:"code"`
-	Message string          `json:"message"`
-	Data    WsServerSendMap `json:"data"`
+	Code    int               `json:"code"`
+	Message string            `json:"message"`
+	Data    []WsServerSendMap `json:"data"`
 }
 
 type WsServerSendMap struct {
