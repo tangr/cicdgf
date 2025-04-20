@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `cicd_log` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `pipeline_id` int(11) UNSIGNED NOT NULL,
   `agent_id` int(11) UNSIGNED NOT NULL,
-  `job_type` varchar(255) NOT NULL,
+  `job_type` varchar(255) UNSIGNED NOT NULL,
   `job_id` int(11) UNSIGNED NOT NULL,
   `task_status` varchar(255) NOT NULL,
   `ipaddr` varchar(255) NOT NULL,
