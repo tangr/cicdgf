@@ -27,6 +27,12 @@ type NotifyReq struct {
 	TimeoutSec int          `json:"timeoutSec" dc:"Timeout in seconds, default 30 seconds"`
 }
 
+type DoneItem struct {
+	AgentId uint `json:"agentId"`
+	// JobId   uint `json:"jobId"`
+	TaskId uint `json:"taskId"`
+}
+
 type Notify struct{}
 
 var (
@@ -37,17 +43,17 @@ var (
 	mutex                   = sync.RWMutex{}
 )
 
-func AddNotification(agentId, jobId uint) {
+func AddNotification(agentId, taskId uint) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	// Update notification status
-	agentNotifications[agentId] = jobId
+	agentNotifications[agentId] = taskId
 
 	// Notify waiting channels
 	if ch, exists := notificationChannelsMap[agentId]; exists {
 		select {
-		case ch <- jobId: // Non-blocking send
+		case ch <- taskId: // Non-blocking send
 		default:
 		}
 		// Clear the notified channel
@@ -109,7 +115,7 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 
 	for _, agentId := range agentIds {
 		// Check if there are existing notifications
-		if jobId, exists := agentNotifications[agentId]; exists {
+		if taskId, exists := agentNotifications[agentId]; exists {
 			r.Response.Status = 200
 			r.Response.WriteJson(g.Map{
 				"code":    0,
@@ -117,7 +123,8 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 				"data": []g.Map{
 					{
 						"agentId": agentId,
-						"jobId":   jobId,
+						// "jobId":   jobId,
+						"taskId": taskId,
 					},
 				},
 			})
@@ -158,10 +165,7 @@ func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []uint, 
 	ctxTimeout, cancel := context.WithTimeout(ctx, timeoutDuration)
 	defer cancel()
 
-	done := make(chan struct {
-		agentId uint
-		jobId   uint
-	}, 1)
+	done := make(chan DoneItem, 1)
 
 	// Register listening channels
 	registerNotificationChannels(agentIds)
@@ -180,8 +184,9 @@ func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []uint, 
 			"message": "Notification received",
 			"data": []g.Map{
 				{
-					"agentId": notification.agentId,
-					"jobId":   notification.jobId,
+					"agentId": notification.AgentId,
+					// "jobId":   notification.JobId,
+					"taskId": notification.TaskId,
 				},
 			},
 		})
@@ -212,19 +217,13 @@ func cleanupNotificationChannels(agentIds []uint) {
 	}
 }
 
-func startListenerGoroutines(ctxTimeout context.Context, agentIds []uint, done chan<- struct {
-	agentId uint
-	jobId   uint
-}) {
+func startListenerGoroutines(ctxTimeout context.Context, agentIds []uint, done chan<- DoneItem) {
 	for _, agentId := range agentIds {
 		go func(id uint) {
 			select {
-			case jobId := <-notificationChannelsMap[id]:
+			case taskId := <-notificationChannelsMap[id]:
 				select {
-				case done <- struct {
-					agentId uint
-					jobId   uint
-				}{agentId: id, jobId: jobId}:
+				case done <- DoneItem{AgentId: id, TaskId: taskId}:
 				default:
 				}
 			case <-ctxTimeout.Done():

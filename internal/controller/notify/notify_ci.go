@@ -11,7 +11,7 @@ import (
 
 func SyncNewCIJob(ctx context.Context) {
 	type NewJobBuild struct {
-		ID      uint `json:"jobid"`
+		Id      uint `json:"task_id"`
 		AgentId uint `json:"agent_id"`
 	}
 	var newJobs = new([]NewJobBuild)
@@ -25,10 +25,10 @@ func SyncNewCIJob(ctx context.Context) {
 			// now := time.Now()
 
 			g.Log().Debug(ctx, "SyncNewCIJob CicdJob")
-			err := dao.CicdJob.Ctx(ctx).
+			err := dao.CicdLog.Ctx(ctx).
 				Fields("id,agent_id").
 				Where("job_type", "BUILD").
-				WhereIn("job_status", g.Slice{"pending"}).
+				WhereIn("task_status", g.Slice{"pending"}).
 				Scan(newJobs)
 
 			if err != nil {
@@ -39,7 +39,7 @@ func SyncNewCIJob(ctx context.Context) {
 
 			for _, newJob := range *newJobs {
 				agentId := newJob.AgentId
-				jobId := newJob.ID
+				taskId := newJob.Id
 
 				ciAgentKey := "ciagent:" + strconv.FormatUint(uint64(agentId), 10)
 				count, err := g.Redis().Exists(ctx, ciAgentKey)
@@ -47,10 +47,10 @@ func SyncNewCIJob(ctx context.Context) {
 					g.Log().Fatal(ctx, err)
 
 				}
-				AddNotification(agentId, jobId)
+				AddNotification(agentId, taskId)
 
 				if count == 0 {
-					err = g.Redis().SetEX(ctx, ciAgentKey, jobId, expireSecs)
+					err = g.Redis().SetEX(ctx, ciAgentKey, taskId, expireSecs)
 					if err != nil {
 						g.Log().Fatal(ctx, err)
 					}

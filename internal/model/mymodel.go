@@ -20,13 +20,16 @@ type WsServerSend struct {
 }
 
 type WsServerSendMap struct {
-	AgentId   int               `json:"agentId"`
-	AgentName string            `json:"agentName"`
-	JobId     int               `json:"jobId"`
-	JobStatus string            `json:"jobStatus"`
-	Body      string            `json:"scriptBody"`
-	Envs      map[string]string `json:"scriptEnvs"`
-	Args      string            `json:"scriptArgs"`
+	AgentId   int    `json:"agentId"`
+	AgentName string `json:"agentName"`
+	JobId     int    `json:"jobId"`
+	JobStatus string `json:"jobStatus"`
+
+	TaskId     int               `json:"taskId"`
+	TaskStatus string            `json:"taskStatus"`
+	Body       string            `json:"scriptBody"`
+	Envs       map[string]string `json:"scriptEnvs"`
+	Args       string            `json:"scriptArgs"`
 
 	// ErrMsg    string            `json:"errmsg"`
 }
