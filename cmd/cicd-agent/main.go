@@ -365,15 +365,18 @@ func (s *agentCICD) HandleJob(jobv *WsServerSendMap) *WsAgentSendMap {
 	return sendMap
 }
 
-func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
+func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) {
 	// var sendJson WsAgentSend
-	var sendJson = WsAgentSend{
-		Items:      make([]WsAgentSendMap, 0),
-		TimeoutSec: 30, // 设置默认超时时间，可根据需要调整
-	}
+	// var sendJson = WsAgentSend{
+	// 	Items:      make([]WsAgentSendMap, 0),
+	// 	TimeoutSec: 30, // 设置默认超时时间，可根据需要调整
+	// }
 
 	recvData := *recvJson
-	// jobv := recvData.Data
+	if len(recvData.Data) < 1 {
+		return
+	}
+
 	for _, jobv := range recvData.Data {
 		// if jobv.ErrMsg != "" {
 		// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
@@ -390,10 +393,13 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
 			}
 		}
 		g.Log().Debugf(ctx, "recvjson: %#v", jobv)
-		var sendMap = s.HandleJob(&jobv)
-		g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
-		sendJson.Items = append(sendJson.Items, *sendMap)
+		s.HandleJob(&jobv)
+		// var sendMap = s.HandleJob(&jobv)
+		// g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
+		// sendJson.Items = append(sendJson.Items, *sendMap)
 	}
+
+	// jobv := recvData.Data
 
 	// if jobv.ErrMsg != "" {
 	// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
@@ -414,7 +420,6 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) WsAgentSend {
 	// g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
 	// sendJson.Items = append(sendJson.Items, *sendMap)
 
-	return sendJson
 }
 
 func (s *agentCICD) AgentRun() {
@@ -459,6 +464,10 @@ func (s *agentCICD) AgentRun() {
 				continue
 			}
 
+			if response.StatusCode != 200 {
+				continue
+			}
+
 			// 解析服务器响应
 			var serverTasks WsServerSend
 
@@ -472,6 +481,10 @@ func (s *agentCICD) AgentRun() {
 				g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
 				continue
 			}
+
+			// 处理服务器下发的任务
+			g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
+			s.HandleRecvJson(&serverTasks)
 
 			// // 处理服务器下发的任务
 			// if len(serverTasks) > 0 {
@@ -487,17 +500,17 @@ func (s *agentCICD) AgentRun() {
 			// 	}
 			// }
 
-			// 处理服务器下发的任务
-			g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
-			result := s.HandleRecvJson(&serverTasks)
+			// // 处理服务器下发的任务
+			// g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
+			// result := s.HandleRecvJson(&serverTasks)
 
-			// 上报任务处理结果
-			if len(result.Items) > 0 {
-				_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
-				if err != nil {
-					g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
-				}
-			}
+			// // 上报任务处理结果
+			// if len(result.Items) > 0 {
+			// 	_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
+			// 	if err != nil {
+			// 		g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
+			// 	}
+			// }
 		}
 	}
 }
