@@ -382,12 +382,80 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 			g.Log().Debug(ctx, "File reading stopped")
 			return
 		case <-ticker.C:
+			oldJobStatus := s.GetStatus(jobId)
+			if oldJobStatus == "" {
+				if err := s.SetStatus(jobId, "pending"); err != nil {
+					g.Log().Error(ctx, jobId, err)
+				}
+				// jobPath := dataPathDir + strconv.Itoa(jobId)
+				// jobPathOutput := jobPath + ".output"
+				var taskRes model.TaskRes
+
+				url := apiUrl + "/log/" + strconv.Itoa(jobv.TaskId)
+				response, err := client.Get(ctx, url)
+				if err != nil {
+					g.Log().Error(ctx, jobId, err)
+				}
+				res := response.ReadAll()
+				g.Log().Debug(ctx, res)
+				err = json.Unmarshal(res, &taskRes)
+				if err != nil {
+					g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
+					continue
+				}
+				jobId = taskRes.Data.JobId
+
+				var jobRes model.JobRes
+
+				url = apiUrl + "/job/" + strconv.Itoa(jobId)
+				response, err = client.Get(ctx, url)
+				if err != nil {
+					g.Log().Error(ctx, jobId, err)
+				}
+				res = response.ReadAll()
+				g.Log().Debug(ctx, res)
+				err = json.Unmarshal(res, &jobRes)
+				if err != nil {
+					g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
+					continue
+				}
+				jobPath := dataPathDir + strconv.Itoa(jobId)
+				jobPathOutput := jobPath + ".output"
+				script_body := jobRes.Data.Script.Body
+
+				if _, ok := runningJobs[jobId]; !ok {
+					scriptBody := script_body + "\n"
+					scriptBody = strings.Replace(scriptBody, "\r\n", "\n", -1)
+					jobPathscriptBody := jobPath + ".scriptbody"
+					s.WriteFile(jobPathscriptBody, scriptBody)
+					scriptArgs := jobv.Args + "\n"
+					scriptArgs = strings.Replace(scriptArgs, "\r\n", "\n", -1)
+					jobPathscriptArgs := jobPath + ".scriptargs"
+					s.WriteFile(jobPathscriptArgs, scriptArgs)
+					var scriptEnvs []string
+					envAgentName := strings.Split(jobv.AgentName, ":")[0]
+					scriptEnvs = append(scriptEnvs, envPrefix+"AGENTNAME"+"="+envAgentName)
+					for k, v := range jobv.Envs {
+						scriptEnvs = append(scriptEnvs, envPrefix+k+"="+v)
+					}
+					execommand := s.GetExecutable(scriptBody)
+					if execommand != "" {
+						runcommand := execommand + " " + jobPathscriptBody + " " + jobPathscriptArgs + " >>" + jobPathOutput + " 2>&1"
+						g.Log().Debugf(ctx, "Run jobId: %d with Command: %s and scriptEnvs: %s", jobId, runcommand, scriptEnvs)
+						go s.RunCommand(jobId, runcommand, scriptEnvs)
+					}
+				}
+			}
+
 			jobPath := dataPathDir + strconv.Itoa(jobId)
 			jobPathOutput := jobPath + ".output"
 			output := s.ReadFile(jobPathOutput)
 			g.Log().Debug(ctx, "File content: %s\n", string(output))
 			sendMap.JobOutput = output
-			client.Put(ctx, apiUrl+"/log/%d", jobv.TaskId)
+			jobStatus := s.GetStatus(jobId)
+			sendMap.JobStatus = jobStatus
+			url := apiUrl + "/log/" + strconv.Itoa(jobv.TaskId)
+			client.Put(ctx, url, sendMap)
 		}
 	}
 

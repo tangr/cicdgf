@@ -33,3 +33,44 @@ type WsServerSendMap struct {
 
 	// ErrMsg    string            `json:"errmsg"`
 }
+
+type TaskRes struct {
+	Message string      `json:"message"`
+	Data    TaskInfoMap `json:"data"`
+}
+
+type TaskInfoMap struct {
+	Id         int    `json:"id"`
+	PipelineId int    `json:"pipelineId"`
+	AgentId    int    `json:"agentId"`
+	JobType    string `json:"jobType"`
+	JobId      int    `json:"jobId"`
+	TaskStatus string `json:"taskStatus"`
+	Ipaddr     string `json:"ipaddr"`
+	UpdateAt   int    `json:"updateAt"`
+	Output     string `json:"output"`
+}
+
+type JobRes struct {
+	Message string     `json:"message"`
+	Data    JobInfoMap `json:"data"`
+}
+
+type JobInfoMap struct {
+	Id          int    `json:"id"`
+	PipelineId  int    `json:"pipelineId"`
+	AgentId     int    `json:"agentId"`
+	Concurrency int    `json:"concurrency"`
+	JobType     string `json:"jobType"`
+	JobStatus   string `json:"jobStatus"`
+	Script      Script `json:"script"`
+	Comment     string `json:"comment"`
+	Author      string `json:"author"`
+	CreatedAt   int    `json:"createdAt"`
+}
+
+type Script struct {
+	Body string            `json:"scriptBody"`
+	Envs map[string]string `json:"scriptEnvs"`
+	Args string            `json:"scriptArgs"`
+}
