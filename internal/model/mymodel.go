@@ -34,7 +34,7 @@ type WsServerSendMap struct {
 	// ErrMsg    string            `json:"errmsg"`
 }
 
-type TaskRes struct {
+type TaskGetRes struct {
 	Message string      `json:"message"`
 	Data    TaskInfoMap `json:"data"`
 }
@@ -51,7 +51,7 @@ type TaskInfoMap struct {
 	Output     string `json:"output"`
 }
 
-type JobRes struct {
+type JobGetRes struct {
 	Message string     `json:"message"`
 	Data    JobInfoMap `json:"data"`
 }

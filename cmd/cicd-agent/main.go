@@ -389,7 +389,7 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 				}
 				// jobPath := dataPathDir + strconv.Itoa(jobId)
 				// jobPathOutput := jobPath + ".output"
-				var taskRes model.TaskRes
+				var taskGetRes model.TaskGetRes
 
 				url := apiUrl + "/log/" + strconv.Itoa(jobv.TaskId)
 				response, err := client.Get(ctx, url)
@@ -398,14 +398,14 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 				}
 				res := response.ReadAll()
 				g.Log().Debug(ctx, res)
-				err = json.Unmarshal(res, &taskRes)
+				err = json.Unmarshal(res, &taskGetRes)
 				if err != nil {
 					g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
 					continue
 				}
-				jobId = taskRes.Data.JobId
+				jobId = taskGetRes.Data.JobId
 
-				var jobRes model.JobRes
+				var jobGetRes model.JobGetRes
 
 				url = apiUrl + "/job/" + strconv.Itoa(jobId)
 				response, err = client.Get(ctx, url)
@@ -414,14 +414,14 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 				}
 				res = response.ReadAll()
 				g.Log().Debug(ctx, res)
-				err = json.Unmarshal(res, &jobRes)
+				err = json.Unmarshal(res, &jobGetRes)
 				if err != nil {
 					g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
 					continue
 				}
 				jobPath := dataPathDir + strconv.Itoa(jobId)
 				jobPathOutput := jobPath + ".output"
-				script_body := jobRes.Data.Script.Body
+				script_body := jobGetRes.Data.Script.Body
 
 				if _, ok := runningJobs[jobId]; !ok {
 					scriptBody := script_body + "\n"
