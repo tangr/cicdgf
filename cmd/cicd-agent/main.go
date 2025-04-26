@@ -31,6 +31,8 @@ type WsServerSend = model.WsServerSend
 
 type WsServerSendMap = model.WsServerSendMap
 
+type Script = model.Script
+
 var AgentCICD = agentCICD{}
 
 type agentCICD struct{}
@@ -387,6 +389,10 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 				if err := s.SetStatus(jobId, "pending"); err != nil {
 					g.Log().Error(ctx, jobId, err)
 				}
+
+				// var script Script = s.GetScriptByTask(jobv.TaskId)
+				// script_body = script.Body
+
 				// jobPath := dataPathDir + strconv.Itoa(jobId)
 				// jobPathOutput := jobPath + ".output"
 				var taskGetRes model.TaskGetRes
@@ -419,9 +425,9 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 					g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
 					continue
 				}
+				script_body := jobGetRes.Data.Script.Body
 				jobPath := dataPathDir + strconv.Itoa(jobId)
 				jobPathOutput := jobPath + ".output"
-				script_body := jobGetRes.Data.Script.Body
 
 				if _, ok := runningJobs[jobId]; !ok {
 					scriptBody := script_body + "\n"
