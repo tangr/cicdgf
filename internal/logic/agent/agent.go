@@ -630,7 +630,7 @@ func (s *agentCICD) AgentRun() {
 			agentStatus := s.PrepareAgentStatusUpdate()
 
 			// 发送Agent状态到服务器
-			g.Log().Infof(ctx, "发送Agent状态更新：%+v", agentStatus)
+			g.Log().Infof(ctx, "发送Agent状态更新2：%s", gconv.String(agentStatus))
 			response, err := client.Post(ctx, apiUrl+"/notifys/v1", agentStatus)
 			if err != nil {
 				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
@@ -657,17 +657,7 @@ func (s *agentCICD) AgentRun() {
 			}
 
 			// 处理服务器下发的任务
-			g.Log().Infof(ctx, "接收到服务器任务1：%s", gjson.New(serverTasks).MustToJsonString())
 			g.Log().Infof(ctx, "接收到服务器任务2：%s", gconv.String(serverTasks))
-
-			g.Log().Infof(ctx, "原始响应: %s", string(res))
-			g.Log().Infof(ctx, "serverTasks.Data[0].ScriptEnvs is nil: %v", serverTasks.Data[0].Envs == nil)
-			g.Log().Infof(ctx, "使用标准库序列化: %s", func() string {
-				if b, err := json.Marshal(serverTasks); err == nil {
-					return string(b)
-				}
-				return "序列化失败"
-			}())
 
 			s.HandleRecvJson(&serverTasks)
 
