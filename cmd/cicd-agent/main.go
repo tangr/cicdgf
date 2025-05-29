@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"cicdgf/internal/logic/agent"
 	"cicdgf/internal/model"
 
 	"github.com/gofrs/flock"
@@ -77,7 +78,7 @@ func init() {
 }
 
 func main() {
-	AgentCICD.AgentRun()
+	agent.AgentCICD.AgentRun()
 }
 
 func (s *agentCICD) GetAgentsList(isreload bool) AgentsList {
@@ -390,8 +391,12 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 					g.Log().Error(ctx, jobId, err)
 				}
 
+				g.Log().Debug(ctx, "GetScriptByTask")
+
 				var script Script = s.GetScriptByTask(jobv.TaskId)
 				script_body := script.Body
+				script_envs := script.Envs
+				script_args := script.Args
 
 				jobPath := dataPathDir + strconv.Itoa(jobId)
 				jobPathOutput := jobPath + ".output"
@@ -401,14 +406,14 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 					scriptBody = strings.Replace(scriptBody, "\r\n", "\n", -1)
 					jobPathscriptBody := jobPath + ".scriptbody"
 					s.WriteFile(jobPathscriptBody, scriptBody)
-					scriptArgs := jobv.Args + "\n"
+					scriptArgs := script_args + "\n"
 					scriptArgs = strings.Replace(scriptArgs, "\r\n", "\n", -1)
 					jobPathscriptArgs := jobPath + ".scriptargs"
 					s.WriteFile(jobPathscriptArgs, scriptArgs)
 					var scriptEnvs []string
 					envAgentName := strings.Split(jobv.AgentName, ":")[0]
 					scriptEnvs = append(scriptEnvs, envPrefix+"AGENTNAME"+"="+envAgentName)
-					for k, v := range jobv.Envs {
+					for k, v := range script_envs {
 						scriptEnvs = append(scriptEnvs, envPrefix+k+"="+v)
 					}
 					execommand := s.GetExecutable(scriptBody)
