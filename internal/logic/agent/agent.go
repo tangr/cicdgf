@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/net/gclient"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gproc"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 type WsAgentSend struct {
@@ -594,6 +595,7 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) {
 }
 
 func (s *agentCICD) AgentRun() {
+	g.Log().Debug(ctx, dataPathDir)
 	if err := gfile.Mkdir(dataPathDir); err != nil {
 		g.Log().Error(ctx, err)
 		panic(err)
@@ -642,11 +644,12 @@ func (s *agentCICD) AgentRun() {
 			// 解析服务器响应
 			var serverTasks WsServerSend
 
-			g.Log().Debug(ctx, apiUrl+"/notifys/v1")
-			g.Log().Debug(ctx, response.StatusCode)
+			// g.Log().Debug(ctx, apiUrl+"/notifys/v1")
+			// g.Log().Debug(ctx, response.StatusCode)
 
 			res := response.ReadAll()
-			g.Log().Debug(ctx, res)
+			g.Log().Debugf(ctx, "Receive res: %s", string(res))
+			// g.Log().Debug(ctx, res)
 			err = json.Unmarshal(res, &serverTasks)
 			if err != nil {
 				g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
@@ -654,7 +657,18 @@ func (s *agentCICD) AgentRun() {
 			}
 
 			// 处理服务器下发的任务
-			g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
+			g.Log().Infof(ctx, "接收到服务器任务1：%s", gjson.New(serverTasks).MustToJsonString())
+			g.Log().Infof(ctx, "接收到服务器任务2：%s", gconv.String(serverTasks))
+
+			g.Log().Infof(ctx, "原始响应: %s", string(res))
+			g.Log().Infof(ctx, "serverTasks.Data[0].ScriptEnvs is nil: %v", serverTasks.Data[0].Envs == nil)
+			g.Log().Infof(ctx, "使用标准库序列化: %s", func() string {
+				if b, err := json.Marshal(serverTasks); err == nil {
+					return string(b)
+				}
+				return "序列化失败"
+			}())
+
 			s.HandleRecvJson(&serverTasks)
 
 			// // 处理服务器下发的任务
