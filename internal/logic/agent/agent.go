@@ -630,7 +630,7 @@ func (s *agentCICD) AgentRun() {
 			agentStatus := s.PrepareAgentStatusUpdate()
 
 			// 发送Agent状态到服务器
-			g.Log().Infof(ctx, "Send agentStatus: %s", gconv.String(agentStatus))
+			g.Log().Debugf(ctx, "Send agentStatus: %s", gconv.String(agentStatus))
 			response, err := client.Post(ctx, apiUrl+"/notifys/v1", agentStatus)
 			if err != nil {
 				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
@@ -658,7 +658,7 @@ func (s *agentCICD) AgentRun() {
 			}
 
 			// 处理服务器下发的任务
-			g.Log().Infof(ctx, "Receive serverTasks: %s", gconv.String(serverTasks))
+			g.Log().Debugf(ctx, "Receive serverTasks: %s", gconv.String(serverTasks))
 
 			s.HandleRecvJson(&serverTasks)
 
