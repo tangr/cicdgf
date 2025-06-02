@@ -703,49 +703,65 @@ func (s *agentCICD) AgentRun() {
 	reload := make(chan os.Signal, 1)
 	signal.Notify(reload, syscall.SIGUSR1)
 
-	ticker := time.NewTicker(time.Duration(syncInterval) * time.Second)
-	defer ticker.Stop()
+	// 移除 ticker，使用 done channel 来控制循环退出
+	done := make(chan bool)
 
+	// 启动主循环协程
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				// 准备要发送的Agent状态数据
+				agentStatus := s.PrepareAgentStatusUpdate()
+
+				// 发送Agent状态到服务器
+				g.Log().Debugf(ctx, "Send agentStatus: %s", gconv.String(agentStatus))
+				response, err := client.Post(ctx, apiUrl+"/notifys/v1", agentStatus)
+				if err != nil {
+					g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
+					// 发生错误时等待一段时间再重试，避免频繁请求
+					time.Sleep(time.Duration(syncInterval) * time.Second)
+					continue
+				}
+
+				if response.StatusCode != 200 {
+					// 状态码不是200时等待一段时间再重试
+					time.Sleep(time.Duration(syncInterval) * time.Second)
+					continue
+				}
+
+				// 解析服务器响应
+				var serverTasks WsServerSend
+
+				res := response.ReadAll()
+
+				err = json.Unmarshal(res, &serverTasks)
+				if err != nil {
+					g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
+					continue
+				}
+
+				// 处理服务器下发的任务
+				g.Log().Debugf(ctx, "Receive serverTasks: %s", gconv.String(serverTasks))
+
+				s.HandleRecvJson(&serverTasks)
+				time.Sleep(time.Duration(1) * time.Second)
+			}
+		}
+	}()
+
+	// 主线程监听信号
 	for {
 		select {
 		case <-interrupt:
 			g.Log().Info(ctx, "程序被中断，正在退出...")
+			done <- true
 			return
 		case <-reload:
 			g.Log().Info(ctx, "正在重新加载配置...")
 			s.GetAgentsList(true)
-		case <-ticker.C:
-			// 准备要发送的Agent状态数据
-			agentStatus := s.PrepareAgentStatusUpdate()
-
-			// 发送Agent状态到服务器
-			g.Log().Debugf(ctx, "Send agentStatus: %s", gconv.String(agentStatus))
-			response, err := client.Post(ctx, apiUrl+"/notifys/v1", agentStatus)
-			if err != nil {
-				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
-				continue
-			}
-
-			if response.StatusCode != 200 {
-				continue
-			}
-
-			// 解析服务器响应
-			var serverTasks WsServerSend
-
-			res := response.ReadAll()
-
-			err = json.Unmarshal(res, &serverTasks)
-			if err != nil {
-				g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
-				continue
-			}
-
-			// 处理服务器下发的任务
-			g.Log().Debugf(ctx, "Receive serverTasks: %s", gconv.String(serverTasks))
-
-			s.HandleRecvJson(&serverTasks)
-
 		}
 	}
 }
