@@ -25,9 +25,9 @@ func (s *agentCICD) GetScriptByTask(taskid int) Script {
 	if err != nil {
 		g.Log().Errorf(ctx, "GetScriptByTask failed: %v", err)
 	}
-	script_body := jobGetRes.Data.Script
+	script_obj := jobGetRes.Data.Script
 
-	return script_body
+	return script_obj
 }
 
 func (s *agentCICD) GetTaskInfoById(taskid int) TaskInfoMap {
@@ -46,5 +46,4 @@ func (s *agentCICD) GetTaskInfoById(taskid int) TaskInfoMap {
 	}
 	taskInfo := taskGetRes.Data
 	return taskInfo
-
 }
