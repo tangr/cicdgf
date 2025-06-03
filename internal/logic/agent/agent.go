@@ -269,105 +269,6 @@ func (s *agentCICD) RunCommand(jobId int, runCommand string, scriptEnvs []string
 	}
 }
 
-// func (s *agentCICD) HandleJob2(jobv *WsServerSendMap) *WsAgentSendMap {
-// 	var sendMap = &WsAgentSendMap{}
-// 	jobId := jobv.JobId
-// 	jobStatus := jobv.JobStatus
-// 	sendMap.AgentId = jobv.AgentId
-// 	sendMap.AgentName = jobv.AgentName
-// 	sendMap.JobId = jobId
-// 	g.Log().Debug(ctx, "HandleJob:jobStatus: ", jobStatus)
-// 	if jobStatus == "success" || jobStatus == "failed" {
-// 		sendMap.JobStatus = jobStatus
-// 		jobPath := dataPathDir + strconv.Itoa(jobId)
-// 		jobPathOutput := jobPath + ".output"
-// 		output := s.ReadFile(jobPathOutput)
-// 		sendMap.JobOutput = output
-// 		return sendMap
-// 	}
-// 	if jobStatus == "running" {
-// 		localJobStatus := s.GetStatus(jobId)
-// 		if localJobStatus == "running" {
-// 			if _, ok := runningJobs[jobId]; !ok {
-// 				sendMap.JobStatus = "pending"
-// 				return sendMap
-// 			}
-// 		}
-// 		sendMap.JobStatus = localJobStatus
-// 		jobPath := dataPathDir + strconv.Itoa(jobId)
-// 		jobPathOutput := jobPath + ".output"
-// 		output := s.ReadFile(jobPathOutput)
-// 		sendMap.JobOutput = output
-// 		return sendMap
-// 	}
-// 	if jobStatus == "aborted" {
-// 		s.KillJob(jobId)
-// 		sendMap.JobStatus = s.GetStatus(jobId)
-// 		jobPath := dataPathDir + strconv.Itoa(jobId)
-// 		jobPathOutput := jobPath + ".output"
-// 		output := s.ReadFile(jobPathOutput)
-// 		sendMap.JobOutput = output
-// 		return sendMap
-// 	}
-// 	if jobStatus == "rerun" {
-// 		oldJobStatus := s.GetStatus(jobId)
-// 		if oldJobStatus == "success" || oldJobStatus == "failed" {
-// 			sendMap.JobStatus = oldJobStatus
-// 			return sendMap
-// 		}
-// 	}
-// 	g.Log().Debug(ctx, 2222)
-// 	g.Log().Debug(ctx, "HandleJob:jobId: %d", jobId)
-// 	oldJobStatus := s.GetStatus(jobId)
-// 	g.Log().Debug(ctx, 3333)
-// 	g.Log().Debugf(ctx, "oldJobStatus: %s", oldJobStatus)
-// 	if oldJobStatus == "success" || oldJobStatus == "failed" {
-// 		sendMap.JobStatus = oldJobStatus
-// 		jobPath := dataPathDir + strconv.Itoa(jobId)
-// 		jobPathOutput := jobPath + ".output"
-// 		output := s.ReadFile(jobPathOutput)
-// 		sendMap.JobOutput = output
-// 		return sendMap
-// 	}
-// 	if oldJobStatus == "" {
-// 		if err := s.SetStatus(jobId, "pending"); err != nil {
-// 			g.Log().Error(ctx, jobId, err)
-// 		}
-// 	}
-// 	g.Log().Debugf(ctx, "oldJobStatus2: %s", oldJobStatus)
-// 	g.Log().Debug(ctx, "jobStatus: ", jobStatus)
-// 	jobPath := dataPathDir + strconv.Itoa(jobId)
-// 	jobPathOutput := jobPath + ".output"
-// 	if jobv.Body != "" {
-// 		if _, ok := runningJobs[jobId]; !ok {
-// 			scriptBody := jobv.Body + "\n"
-// 			scriptBody = strings.Replace(scriptBody, "\r\n", "\n", -1)
-// 			jobPathscriptBody := jobPath + ".scriptbody"
-// 			s.WriteFile(jobPathscriptBody, scriptBody)
-// 			scriptArgs := jobv.Args + "\n"
-// 			scriptArgs = strings.Replace(scriptArgs, "\r\n", "\n", -1)
-// 			jobPathscriptArgs := jobPath + ".scriptargs"
-// 			s.WriteFile(jobPathscriptArgs, scriptArgs)
-// 			var scriptEnvs []string
-// 			envAgentName := strings.Split(jobv.AgentName, ":")[0]
-// 			scriptEnvs = append(scriptEnvs, envPrefix+"AGENTNAME"+"="+envAgentName)
-// 			for k, v := range jobv.Envs {
-// 				scriptEnvs = append(scriptEnvs, envPrefix+k+"="+v)
-// 			}
-// 			execommand := s.GetExecutable(scriptBody)
-// 			if execommand != "" {
-// 				runcommand := execommand + " " + jobPathscriptBody + " " + jobPathscriptArgs + " >>" + jobPathOutput + " 2>&1"
-// 				g.Log().Debugf(ctx, "Run jobId: %d with Command: %s and scriptEnvs: %s", jobId, runcommand, scriptEnvs)
-// 				go s.RunCommand(jobId, runcommand, scriptEnvs)
-// 			}
-// 		}
-// 	}
-// 	sendMap.JobStatus = s.GetStatus(jobId)
-// 	output := s.ReadFile(jobPathOutput)
-// 	sendMap.JobOutput = output
-// 	return sendMap
-// }
-
 func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 	var sendMap = &WsAgentSendMap{}
 	jobId := jobv.JobId
@@ -552,7 +453,7 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) {
 		// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
 		// 	continue
 		// }
-		if jobv.TaskId == 0 || jobv.JobStatus == "" {
+		if jobv.TaskId == 0 {
 			continue
 		}
 		g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxRunningJobs)
