@@ -276,9 +276,7 @@ func (s *agentCICD) RunCommand(jobId int, runCommand string, scriptEnvs []string
 
 func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 	var sendMap = &WsAgentSendLogMap{}
-	// jobId := jobv.JobId
 	taskId := jobv.TaskId
-	// taskStatus := jobv.TaskStatus
 
 	taskInfo := s.GetTaskInfoById(taskId)
 
@@ -290,7 +288,7 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 	sendMap.JobId = taskInfo.JobId
 	sendMap.PipelineId = taskInfo.PipelineId
 
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(3 * time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -346,8 +344,10 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 			sendMap.Output = output
 			taskStatus := s.GetStatus(taskId)
 			sendMap.TaskStatus = taskStatus
-			sendMap.UpdatedAt = gtime.Timestamp()
+			currentTime := gtime.Timestamp()
+			sendMap.UpdatedAt = currentTime
 
+			g.Log().Debugf(ctx, "currentTime: %d", currentTime)
 			g.Log().Debugf(ctx, "sendMap: %s", gconv.String(sendMap))
 			url := apiUrl + "/log/" + strconv.Itoa(taskId)
 			response, err := client.Put(ctx, url, sendMap)
