@@ -33,8 +33,8 @@ type UpdateReq struct {
 	g.Meta `path:"/log/{id}" method:"put" tags:"Log" summary:"Update Log"`
 
 	Id         uint64 `v:"required" json:"logId" dc:"Log ID"`
-	PipelineId int    `v:"required" json:"pipelineId" dc:"Pipeline ID"`
-	AgentId    int    `v:"required" json:"agentId" dc:"Agent ID"`
+	PipelineId int    `v:"required-without:agentId" json:"pipelineId" dc:"Pipeline ID"`
+	AgentId    int    `v:"required-without:pipelineId" json:"agentId" dc:"Agent ID"`
 	JobType    string `v:"required|in:BUILD,DEPLOY" json:"jobType" dc:"Job type"`
 	JobId      int    `v:"required" json:"jobId" dc:"Job ID"`
 	TaskStatus string `v:"required|in:pending,running,failed,success" json:"taskStatus" dc:"Task status"`
