@@ -41,6 +41,6 @@ type UpdateReq struct {
 	TaskStatus string `v:"required|in:pending,running,failed,success" json:"taskStatus" dc:"Task status"`
 	Ipaddr     string `v:"required" json:"ipaddr" dc:"IP address"`
 	UpdatedAt  int64  `v:"required" json:"updatedAt" dc:"Update timestamp"`
-	Output     string `v:"required" json:"output" dc:"Output content"`
+	Output     string `json:"output" dc:"Output content"`
 }
 type UpdateRes struct{}
