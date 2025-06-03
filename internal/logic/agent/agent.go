@@ -32,6 +32,8 @@ type WsServerSend = model.WsServerSend
 
 type WsServerSendMap = model.WsServerSendMap
 
+type TaskInfoMap = model.TaskInfoMap
+
 type Script = model.Script
 
 var AgentCICD = agentCICD{}
