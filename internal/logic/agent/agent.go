@@ -284,7 +284,6 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 
 	sendMap.JobType = taskInfo.JobType
 	sendMap.Ipaddr = "127.0.0.1"
-	sendMap.UpdatedAt = gtime.Timestamp()
 
 	// jobStatus := jobv.JobStatus
 	sendMap.AgentId = jobv.AgentId
@@ -347,6 +346,8 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 			sendMap.Output = output
 			taskStatus := s.GetStatus(taskId)
 			sendMap.TaskStatus = taskStatus
+			sendMap.UpdatedAt = gtime.Timestamp()
+
 			g.Log().Debugf(ctx, "sendMap: %s", gconv.String(sendMap))
 			url := apiUrl + "/log/" + strconv.Itoa(taskId)
 			response, err := client.Put(ctx, url, sendMap)
