@@ -44,7 +44,7 @@ var (
 	syncInterval                          = g.Cfg().MustGet(ctx, "agent.SyncInterval").Int32()
 	dataPathDir                           = g.Cfg().MustGet(ctx, "agent.DataPathDir").String()
 	jobFlash                              = g.Cfg().MustGet(ctx, "agent.JobFlash").String()
-	maxrunningjobs int                    = g.Cfg().MustGet(ctx, "agent.MaxRunningJobs").Int()
+	maxRunningJobs int                    = g.Cfg().MustGet(ctx, "agent.MaxRunningJobs").Int()
 	runningJobs    map[int]*gproc.Process = make(map[int]*gproc.Process)
 	envPrefix      string                 = g.Cfg().MustGet(ctx, "agent.EnvPrefix").String()
 	agents         AgentsList             = make(AgentsList, 0)
@@ -555,8 +555,8 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) {
 		if jobv.TaskId == 0 || jobv.JobStatus == "" {
 			continue
 		}
-		g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
-		if len(runningJobs) >= maxrunningjobs {
+		g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxRunningJobs)
+		if len(runningJobs) >= maxRunningJobs {
 			jobId := jobv.JobId
 			if _, ok := runningJobs[jobId]; !ok {
 				continue
