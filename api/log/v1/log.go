@@ -15,9 +15,10 @@ type GetOneRes struct {
 }
 
 type CreateReq struct {
-	g.Meta     `path:"/log" method:"post" tags:"Log" summary:"Create Log"`
+	g.Meta `path:"/log" method:"post" tags:"Log" summary:"Create Log"`
+
 	PipelineId int    `v:"required-without:agentId" json:"pipelineId" dc:"Pipeline ID"`
-	AgentId    int    `v:"required-without:pipelineId" dc:"Agent ID"`
+	AgentId    int    `v:"required-without:pipelineId" json:"agentId" dc:"Agent ID"`
 	JobType    string `v:"required|in:BUILD,DEPLOY" json:"jobType" dc:"Job type"`
 	JobId      int    `v:"required" json:"jobId" dc:"Job ID"`
 	TaskStatus string `v:"required|in:pending,running,failed,success" json:"taskStatus" dc:"Task status"`
@@ -32,7 +33,7 @@ type CreateRes struct {
 type UpdateReq struct {
 	g.Meta `path:"/log/{id}" method:"put" tags:"Log" summary:"Update Log"`
 
-	Id         uint64 `v:"required" json:"logId" dc:"Log ID"`
+	Id         uint64 `v:"required" json:"id" dc:"Log ID"`
 	PipelineId int    `v:"required-without:agentId" json:"pipelineId" dc:"Pipeline ID"`
 	AgentId    int    `v:"required-without:pipelineId" json:"agentId" dc:"Agent ID"`
 	JobType    string `v:"required|in:BUILD,DEPLOY" json:"jobType" dc:"Job type"`
