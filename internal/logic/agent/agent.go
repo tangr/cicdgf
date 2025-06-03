@@ -726,7 +726,7 @@ func (s *agentCICD) AgentRun() {
 					continue
 				}
 
-				if response.StatusCode != 200 {
+				if response.StatusCode != 200 && response.StatusCode != 304 {
 					// 状态码不是200时等待一段时间再重试
 					time.Sleep(time.Duration(syncInterval) * time.Second)
 					continue
