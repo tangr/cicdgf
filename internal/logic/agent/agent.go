@@ -552,7 +552,7 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) {
 		// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
 		// 	continue
 		// }
-		if jobv.JobId == 0 || jobv.JobStatus == "" {
+		if jobv.TaskId == 0 || jobv.JobStatus == "" {
 			continue
 		}
 		g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
@@ -571,125 +571,7 @@ func (s *agentCICD) HandleRecvJson(recvJson *WsServerSend) {
 		// sendJson.Items = append(sendJson.Items, *sendMap)
 	}
 
-	// jobv := recvData.Data
-
-	// if jobv.ErrMsg != "" {
-	// 	g.Log().Errorf(ctx, "jobId: %d errmsg: %s", jobv.JobId, jobv.ErrMsg)
-	// }
-
-	// g.Log().Debug(ctx, "HandleRecvJson jobv: %+v", jobv)
-	// if jobv.JobId == 0 || jobv.JobStatus == "" {
-	// }
-	// g.Log().Debugf(ctx, "len runningJobs: %d %d", len(runningJobs), maxrunningjobs)
-	// if len(runningJobs) >= maxrunningjobs {
-	// 	jobId := jobv.JobId
-	// 	if _, ok := runningJobs[jobId]; !ok {
-	// 		g.Log().Error(ctx, ok)
-	// 	}
-	// }
-	// g.Log().Debugf(ctx, "recvjson: %#v", jobv)
-	// var sendMap = s.HandleJob(&jobv)
-	// g.Log().Debugf(ctx, "sendjson: %#v", sendMap)
-	// sendJson.Items = append(sendJson.Items, *sendMap)
-
 }
-
-// func (s *agentCICD) AgentRun2() {
-// 	g.Log().Debug(ctx, dataPathDir)
-// 	if err := gfile.Mkdir(dataPathDir); err != nil {
-// 		g.Log().Error(ctx, err)
-// 		panic(err)
-// 	}
-
-// 	interrupt := make(chan os.Signal, 1)
-// 	signal.Notify(interrupt, os.Interrupt)
-// 	reload := make(chan os.Signal, 1)
-// 	signal.Notify(reload, syscall.SIGUSR1)
-
-// 	// 创建HTTP客户端
-// 	// client := g.Client()
-// 	// client.SetTimeout(100 * time.Second)
-// 	// header := g.MapStrStr{
-// 	// 	"Content-Type": "application/json",
-// 	// }
-// 	// client.SetHeaderMap(header)
-
-// 	ticker := time.NewTicker(time.Duration(syncInterval) * time.Second)
-// 	defer ticker.Stop()
-
-// 	for {
-// 		select {
-// 		case <-interrupt:
-// 			g.Log().Info(ctx, "程序被中断，正在退出...")
-// 			return
-// 		case <-reload:
-// 			g.Log().Info(ctx, "正在重新加载配置...")
-// 			s.GetAgentsList(true)
-// 		case <-ticker.C:
-// 			// 准备要发送的Agent状态数据
-// 			agentStatus := s.PrepareAgentStatusUpdate()
-
-// 			// 发送Agent状态到服务器
-// 			g.Log().Debugf(ctx, "Send agentStatus: %s", gconv.String(agentStatus))
-// 			response, err := client.Post(ctx, apiUrl+"/notifys/v1", agentStatus)
-// 			if err != nil {
-// 				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
-// 				continue
-// 			}
-
-// 			if response.StatusCode != 200 {
-// 				continue
-// 			}
-
-// 			// 解析服务器响应
-// 			var serverTasks WsServerSend
-
-// 			// g.Log().Debug(ctx, apiUrl+"/notifys/v1")
-// 			// g.Log().Debug(ctx, response.StatusCode)
-
-// 			res := response.ReadAll()
-// 			// g.Log().Debugf(ctx, "Receive res: %s", string(res))
-// 			// g.Log().Debugf(ctx, "Receive res: %s", gconv.String(res))
-// 			// g.Log().Debug(ctx, res)
-// 			err = json.Unmarshal(res, &serverTasks)
-// 			if err != nil {
-// 				g.Log().Errorf(ctx, "解析服务器响应失败: %v", err)
-// 				continue
-// 			}
-
-// 			// 处理服务器下发的任务
-// 			g.Log().Debugf(ctx, "Receive serverTasks: %s", gconv.String(serverTasks))
-
-// 			s.HandleRecvJson(&serverTasks)
-
-// 			// // 处理服务器下发的任务
-// 			// if len(serverTasks) > 0 {
-// 			// 	g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
-// 			// 	result := s.HandleRecvJson(&serverTasks)
-
-// 			// 	// 上报任务处理结果
-// 			// 	if len(result.Items) > 0 {
-// 			// 		_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
-// 			// 		if err != nil {
-// 			// 			g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
-// 			// 		}
-// 			// 	}
-// 			// }
-
-// 			// // 处理服务器下发的任务
-// 			// g.Log().Infof(ctx, "接收到服务器任务：%v", serverTasks)
-// 			// result := s.HandleRecvJson(&serverTasks)
-
-// 			// // 上报任务处理结果
-// 			// if len(result.Items) > 0 {
-// 			// 	_, err := client.Post(ctx, apiUrl+"/agent/job/result", result)
-// 			// 	if err != nil {
-// 			// 		g.Log().Errorf(ctx, "上报任务结果失败: %v", err)
-// 			// 	}
-// 			// }
-// 		}
-// 	}
-// }
 
 func (s *agentCICD) AgentRun() {
 	g.Log().Debug(ctx, dataPathDir)
