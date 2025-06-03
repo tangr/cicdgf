@@ -24,7 +24,7 @@ type WsAgentSendLogMap struct {
 	JobId      int    `json:"jobId"`
 	TaskStatus string `json:"taskStatus"`
 	Ipaddr     string `json:"ipaddr"`
-	UpdatedAt  int64  `json:"updateAt"`
+	UpdatedAt  int64  `json:"updatedAt"`
 	Output     string `json:"output"`
 }
 
