@@ -77,9 +77,9 @@ func init() {
 	client.SetHeaderMap(header)
 }
 
-func main() {
-	AgentCICD.AgentRun()
-}
+// func main() {
+// 	AgentCICD.AgentRun()
+// }
 
 func (s *agentCICD) GetAgentsList(isreload bool) AgentsList {
 	if len(agents) != 0 && !isreload {
@@ -271,14 +271,14 @@ func (s *agentCICD) RunCommand(jobId int, runCommand string, scriptEnvs []string
 
 func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 	var sendMap = &WsAgentSendMap{}
-	jobId := jobv.JobId
-	// taskId := jobv.TaskId
+	// jobId := jobv.JobId
+	taskId := jobv.TaskId
 	// taskStatus := jobv.TaskStatus
 
 	// jobStatus := jobv.JobStatus
 	sendMap.AgentId = jobv.AgentId
 	sendMap.AgentName = jobv.AgentName
-	sendMap.JobId = jobId
+	// sendMap.JobId = jobId
 
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
@@ -289,23 +289,23 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 			g.Log().Debug(ctx, "File reading stopped")
 			return
 		case <-ticker.C:
-			oldJobStatus := s.GetStatus(jobId)
-			if oldJobStatus == "" {
-				if err := s.SetStatus(jobId, "pending"); err != nil {
-					g.Log().Error(ctx, jobId, err)
+			oldStatus := s.GetStatus(taskId)
+			if oldStatus == "" {
+				if err := s.SetStatus(taskId, "pending"); err != nil {
+					g.Log().Error(ctx, taskId, err)
 				}
 
 				g.Log().Debug(ctx, "GetScriptByTask")
 
-				var script Script = s.GetScriptByTask(jobv.TaskId)
+				var script Script = s.GetScriptByTask(taskId)
 				script_body := script.Body
 				script_envs := script.Envs
 				script_args := script.Args
 
-				jobPath := dataPathDir + strconv.Itoa(jobId)
+				jobPath := dataPathDir + strconv.Itoa(taskId)
 				jobPathOutput := jobPath + ".output"
 
-				if _, ok := runningJobs[jobId]; !ok {
+				if _, ok := runningJobs[taskId]; !ok {
 					scriptBody := script_body + "\n"
 					scriptBody = strings.Replace(scriptBody, "\r\n", "\n", -1)
 					jobPathscriptBody := jobPath + ".scriptbody"
@@ -323,21 +323,27 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 					execommand := s.GetExecutable(scriptBody)
 					if execommand != "" {
 						runcommand := execommand + " " + jobPathscriptBody + " " + jobPathscriptArgs + " >>" + jobPathOutput + " 2>&1"
-						g.Log().Debugf(ctx, "Run jobId: %d with Command: %s and scriptEnvs: %s", jobId, runcommand, scriptEnvs)
-						go s.RunCommand(jobId, runcommand, scriptEnvs)
+						g.Log().Debugf(ctx, "Run taskId: %d with Command: %s and scriptEnvs: %s", taskId, runcommand, scriptEnvs)
+						go s.RunCommand(taskId, runcommand, scriptEnvs)
 					}
 				}
 			}
 
-			jobPath := dataPathDir + strconv.Itoa(jobId)
+			jobPath := dataPathDir + strconv.Itoa(taskId)
 			jobPathOutput := jobPath + ".output"
 			output := s.ReadFile(jobPathOutput)
 			g.Log().Debug(ctx, "File content: %s\n", string(output))
 			sendMap.JobOutput = output
-			jobStatus := s.GetStatus(jobId)
+			jobStatus := s.GetStatus(taskId)
 			sendMap.JobStatus = jobStatus
-			url := apiUrl + "/log/" + strconv.Itoa(jobv.TaskId)
-			client.Put(ctx, url, sendMap)
+			url := apiUrl + "/log/" + strconv.Itoa(taskId)
+			response, err := client.Put(ctx, url, sendMap)
+			if err != nil {
+				g.Log().Errorf(ctx, "发送状态更新失败: %v", err)
+			}
+			g.Log().Debugf(ctx, "Receive Put response: %s", gconv.String(response))
+			g.Log().Debugf(ctx, "Receive Put StatusCode: %s", gconv.String(response.StatusCode))
+
 		}
 	}
 
