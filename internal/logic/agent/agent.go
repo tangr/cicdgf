@@ -334,8 +334,8 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 			output := s.ReadFile(jobPathOutput)
 			g.Log().Debug(ctx, "File content: %s\n", string(output))
 			sendMap.JobOutput = output
-			jobStatus := s.GetStatus(taskId)
-			sendMap.JobStatus = jobStatus
+			taskStatus := s.GetStatus(taskId)
+			sendMap.TaskStatus = taskStatus
 			url := apiUrl + "/log/" + strconv.Itoa(taskId)
 			response, err := client.Put(ctx, url, sendMap)
 			if err != nil {

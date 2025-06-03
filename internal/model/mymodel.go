@@ -6,6 +6,10 @@ type WsAgentSendMap struct {
 	JobId     int    `json:"jobId"`
 	JobStatus string `json:"jobStatus"`
 	JobOutput string `json:"jobOutput"`
+
+	TaskId     int    `json:"taskId"`
+	TaskStatus string `json:"taskStatus"`
+	TaskOutput string `json:"taskOutput"`
 }
 
 type WsAgentSend struct {
