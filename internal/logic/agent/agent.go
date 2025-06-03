@@ -18,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/net/gclient"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gproc"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -27,6 +28,8 @@ type WsAgentSend struct {
 }
 
 type WsAgentSendMap = model.WsAgentSendMap
+
+type WsAgentSendLogMap = model.WsAgentSendLogMap
 
 type WsServerSend = model.WsServerSend
 
@@ -272,15 +275,21 @@ func (s *agentCICD) RunCommand(jobId int, runCommand string, scriptEnvs []string
 }
 
 func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
-	var sendMap = &WsAgentSendMap{}
+	var sendMap = &WsAgentSendLogMap{}
 	// jobId := jobv.JobId
 	taskId := jobv.TaskId
 	// taskStatus := jobv.TaskStatus
 
+	taskInfo := s.GetTaskInfoById(taskId)
+
+	sendMap.JobType = taskInfo.JobType
+	sendMap.Ipaddr = "127.0.0.1"
+	sendMap.UpdatedAt = gtime.Timestamp()
+
 	// jobStatus := jobv.JobStatus
 	sendMap.AgentId = jobv.AgentId
-	sendMap.AgentName = jobv.AgentName
-	// sendMap.JobId = jobId
+	sendMap.JobId = taskInfo.JobId
+	sendMap.PipelineId = taskInfo.PipelineId
 
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
@@ -335,9 +344,10 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 			jobPathOutput := jobPath + ".output"
 			output := s.ReadFile(jobPathOutput)
 			g.Log().Debug(ctx, "File content: %s\n", string(output))
-			sendMap.JobOutput = output
+			sendMap.Output = output
 			taskStatus := s.GetStatus(taskId)
 			sendMap.TaskStatus = taskStatus
+			g.Log().Debugf(ctx, "sendMap: %s", gconv.String(sendMap))
 			url := apiUrl + "/log/" + strconv.Itoa(taskId)
 			response, err := client.Put(ctx, url, sendMap)
 			if err != nil {

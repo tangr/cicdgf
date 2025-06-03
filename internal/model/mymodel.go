@@ -17,6 +17,17 @@ type WsAgentSend struct {
 	TimeoutSec int              `json:"timeoutSec"`
 }
 
+type WsAgentSendLogMap struct {
+	PipelineId int    `json:"pipelineId"`
+	AgentId    int    `json:"agentId"`
+	JobType    string `json:"jobType"`
+	JobId      int    `json:"jobId"`
+	TaskStatus string `json:"taskStatus"`
+	Ipaddr     string `json:"ipaddr"`
+	UpdatedAt  int64  `json:"updateAt"`
+	Output     string `json:"output"`
+}
+
 type WsServerSend struct {
 	Code    int               `json:"code"`
 	Message string            `json:"message"`
