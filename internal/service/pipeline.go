@@ -26,14 +26,14 @@ type PipelineDetail struct {
 	Body          PipelineBody `json:"body"`
 }
 
-type Script struct {
+type ScriptObj struct {
 	Args   string `json:"script_args"`
 	Script string `json:"script_name"`
 }
 
 type PipelineBody struct {
-	StageCI Script `json:"stageCI"`
-	StageCD Script `json:"stageCD"`
+	StageCI ScriptObj `json:"stageCI"`
+	StageCD ScriptObj `json:"stageCD"`
 }
 
 type JobScriptValue struct {

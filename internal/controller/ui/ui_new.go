@@ -77,6 +77,23 @@ type AgentUpdateReq struct {
 	g.Meta `path:"/agents/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
 }
 
+// scripts
+type ScriptGetListReq struct {
+	g.Meta `path:"/scripts" tags:"ui" method:"get" summary:"ui console index"`
+}
+type ScriptNewReq struct {
+	g.Meta `path:"/scriptnew" tags:"ui" method:"get" summary:"ui console index"`
+}
+type ScriptCreateReq struct {
+	g.Meta `path:"/scripts" tags:"ui" method:"post" summary:"ui console index"`
+}
+type ScriptGetOneReq struct {
+	g.Meta `path:"/scripts/{id}" tags:"ui" method:"get" summary:"ui console index"`
+}
+type ScriptUpdateReq struct {
+	g.Meta `path:"/scripts/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+}
+
 // pipelines
 type PipelineGetListReq struct {
 	g.Meta `path:"/pipelines" tags:"ui" method:"get" summary:"ui console index"`
@@ -142,6 +159,12 @@ type IUiV1 interface {
 	AgentCreate(ctx context.Context, req *AgentCreateReq) (res *ghttp.Response, err error)
 	AgentGetOne(ctx context.Context, req *AgentGetOneReq) (res *ghttp.Response, err error)
 	AgentUpdate(ctx context.Context, req *AgentUpdateReq) (res *ghttp.Response, err error)
+
+	ScriptGetList(ctx context.Context, req *ScriptGetListReq) (res *ghttp.Response, err error)
+	ScriptNew(ctx context.Context, req *ScriptNewReq) (res *ghttp.Response, err error)
+	ScriptCreate(ctx context.Context, req *ScriptCreateReq) (res *ghttp.Response, err error)
+	ScriptGetOne(ctx context.Context, req *ScriptGetOneReq) (res *ghttp.Response, err error)
+	ScriptUpdate(ctx context.Context, req *ScriptUpdateReq) (res *ghttp.Response, err error)
 
 	PipelineGetList(ctx context.Context, req *PipelineGetListReq) (res *ghttp.Response, err error)
 	PipelineNew(ctx context.Context, req *PipelineNewReq) (res *ghttp.Response, err error)
