@@ -347,7 +347,7 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 			currentTime := gtime.Timestamp()
 			sendMap.UpdatedAt = currentTime
 
-			g.Log().Debugf(ctx, "currentTime: %d", currentTime)
+			g.Log().Debugf(ctx, "currentTime: %d-%d", taskId, currentTime)
 			g.Log().Debugf(ctx, "sendMap: %s", gconv.String(sendMap))
 			url := apiUrl + "/log/" + strconv.Itoa(taskId)
 			response, err := client.Put(ctx, url, sendMap)
