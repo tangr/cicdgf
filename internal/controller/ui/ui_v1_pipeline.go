@@ -84,10 +84,6 @@ func (c *ControllerV1) PipelineGetOne(ctx context.Context, req *PipelineGetOneRe
 	}
 
 	g.Log().Debug(ctx, "pipeline: ", pipeline)
-	g.Log().Debugf(ctx, "PipelineGetOne agent_name: %s, agent_ipaddr: %s", pipeline.Pipeline_name, pipeline.Agent_id)
-
-	g.Log().Debug(ctx, "pipeline_group: ", pipeline.Group_id)
-	g.Log().Debug(ctx, "pipeline_agent: ", pipeline.Agent_id)
 	g.Log().Debug(ctx, "pipeline_body: ", pipeline.Body)
 
 	err = r.Response.WriteTpl("pipelines/edit.html", g.Map{
