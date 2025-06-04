@@ -1,8 +1,11 @@
 package service
 
 import (
+	"cicdgf/internal/dao"
+	"context"
 	"math/rand"
-	"time"
+
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 var Comm = commService{}
@@ -32,7 +35,6 @@ func (s *commService) ParseEnvs(envs map[string]interface{}) map[string]string {
 
 func (s *commService) RandSeq(randlen int) string {
 	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	rand.Seed(time.Now().UnixNano())
 	b := make([]rune, randlen)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
@@ -40,10 +42,11 @@ func (s *commService) RandSeq(randlen int) string {
 	return string(b)
 }
 
-// func (s *commService) GetScriptBody(script_name string) string {
-// 	script_body, err := dao.CicdScript.Fields("script_body").Where("script_name=", script_name).Value()
-// 	if err != nil {
-// 		g.Log().Error(err)
-// 	}
-// 	return script_body.String()
-// }
+func (s *commService) GetScriptBody(script_name string) string {
+	ctx := context.Background()
+	script_body, err := dao.CicdScript.Ctx(ctx).Fields("script_body").Where("script_name=", script_name).Value()
+	if err != nil {
+		g.Log().Error(ctx, err)
+	}
+	return script_body.String()
+}
