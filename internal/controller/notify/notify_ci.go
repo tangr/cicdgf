@@ -16,7 +16,7 @@ func SyncNewCIJob(ctx context.Context) {
 	}
 	var newJobs = new([]NewJobBuild)
 
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(15 * time.Second)
 
 	go func() {
 		for {
