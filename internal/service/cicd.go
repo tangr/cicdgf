@@ -103,6 +103,7 @@ func (s *cicdService) PageContent(page *gpage.Page) string {
 
 func (s *cicdService) CreateJob(ctx context.Context, pipeline_id int, envs map[string]interface{}, username string) (int64, error) {
 	var script_args string
+	var script_name string
 	var jobtype string
 	var job_envs map[string]string = Comm.ParseEnvs(envs)
 	var comment string = job_envs["COMMENT"]
@@ -124,7 +125,7 @@ func (s *cicdService) CreateJob(ctx context.Context, pipeline_id int, envs map[s
 	// pipeline_name, agent_id, concurrency, pipeline_body := Pipeline.GetOne(pipeline_id)
 	if job_type == "BUILD" {
 		jobtype = job_type
-		// script_name := pipeline_body.StageCI.Script
+		script_name = pipeline_body.StageCI.Script
 		script_args = pipeline_body.StageCI.Args
 		job_envs["PKGRDM"] = Comm.RandSeq(20)
 	} else if job_type == "DEPLOY" {
@@ -148,7 +149,7 @@ func (s *cicdService) CreateJob(ctx context.Context, pipeline_id int, envs map[s
 			return last_job_status.Id, nil
 		}
 		jobtype = job_type
-		// script_name := pipeline_body.StageCD.Script
+		script_name = pipeline_body.StageCD.Script
 		script_args = pipeline_body.StageCD.Args
 	} else {
 		g.Log().Errorf(ctx, "unsupported job_type: %s", job_type)
@@ -156,7 +157,7 @@ func (s *cicdService) CreateJob(ctx context.Context, pipeline_id int, envs map[s
 	job_envs["PIPELINEID"] = fmt.Sprint(pipeline_id)
 	job_envs["PIPELINENAME"] = strings.Split(pipeline_name, ":")[0]
 	job_envs["USERNAME"] = username
-	script_body := "Script.GetScriptBody(script_name)"
+	script_body := Comm.GetScriptBody(script_name)
 	new_jobscript := new(JobScriptValue)
 	new_jobscript.Envs = job_envs
 	new_jobscript.Args = script_args
