@@ -68,7 +68,7 @@ func (c *ControllerV1) PipelineGetOne(ctx context.Context, req *PipelineGetOneRe
 
 	pipeline_id := r.Get("id").Int()
 
-	pipeline, err := service.Pipeline.GetOne(pipeline_id)
+	pipeline, err := service.Pipeline.GetOnePipeline(pipeline_id)
 	if err != nil {
 		return nil, err
 	}
