@@ -35,8 +35,8 @@ type PipelineDetail struct {
 }
 
 type JobScriptObj struct {
-	Args   string `json:"script_args"`
-	Script string `json:"script_name"`
+	Args   string `json:"args"`
+	Script string `json:"script"`
 }
 
 type PipelineBody struct {
