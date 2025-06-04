@@ -40,7 +40,7 @@ func (c *ControllerV1) ScriptCreate(ctx context.Context, req *ScriptCreateReq) (
 	r := g.RequestFromCtx(ctx)
 
 	var script_name string = r.Get("script_name").String()
-	var script_body string = r.Get("pipeline_body").String()
+	var script_body string = r.Get("script_body").String()
 	script_body = strings.Replace(script_body, "\r\n", "\n", -1)
 
 	script_id := service.Script.New(script_name, script_body)
