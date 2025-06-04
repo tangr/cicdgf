@@ -18,6 +18,14 @@ type ListPipelines struct {
 	Pipeline_name string `json:"pipeline_name"`
 }
 
+type PipelineOne struct {
+	Pipeline_name string `json:"pipeline_name"`
+	Group_id      string `json:"group_id"`
+	Agent_id      string `json:"agent_id"`
+	Concurrency   string `json:"concurrency"`
+	Body          string `json:"body"`
+}
+
 type PipelineDetail struct {
 	Pipeline_name string       `json:"pipeline_name"`
 	Group_id      string       `json:"group_id"`
@@ -32,8 +40,8 @@ type ScriptObj struct {
 }
 
 type PipelineBody struct {
-	StageCI ScriptObj `json:"stageCI"`
-	StageCD ScriptObj `json:"stageCD"`
+	StageCI JobScriptValue `json:"stageCI"`
+	StageCD JobScriptValue `json:"stageCD"`
 }
 
 type JobScriptValue struct {
@@ -74,6 +82,27 @@ func (s *pipelineService) New(pipeline_name string, group_id int, agent_id int, 
 	}
 
 	return pipeline_id
+}
+
+func (s *pipelineService) GetOnePipeline(pipeline_id int) (*PipelineOne, error) {
+	ctx := context.Background()
+
+	record, err := dao.CicdPipeline.Ctx(ctx).
+		Fields("pipeline_name,group_id,agent_id,concurrency,body").
+		Where("id=?", pipeline_id).
+		One()
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return nil, err
+	}
+
+	return &PipelineOne{
+		Pipeline_name: record["pipeline_name"].String(),
+		Group_id:      record["group_id"].String(),
+		Agent_id:      record["agent_id"].String(),
+		Concurrency:   record["concurrency"].String(),
+		Body:          record["body"].String(),
+	}, nil
 }
 
 func (s *pipelineService) GetOne(pipeline_id int) (*PipelineDetail, error) {
