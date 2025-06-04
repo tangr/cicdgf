@@ -34,12 +34,17 @@ type PipelineDetail struct {
 	Body          PipelineBody `json:"body"`
 }
 
-type ScriptObj struct {
+type JobScriptObj struct {
 	Args   string `json:"script_args"`
 	Script string `json:"script_name"`
 }
 
 type PipelineBody struct {
+	StageCI JobScriptObj `json:"stageCI"`
+	StageCD JobScriptObj `json:"stageCD"`
+}
+
+type JobScript struct {
 	StageCI JobScriptValue `json:"stageCI"`
 	StageCD JobScriptValue `json:"stageCD"`
 }
