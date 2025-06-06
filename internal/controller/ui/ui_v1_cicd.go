@@ -164,12 +164,12 @@ func (c *ControllerV1) CicdJobGetOne(ctx context.Context, req *CicdJobGetOneReq)
 		r.Response.WriteTpl("cicd/job_deploy.html", params)
 	}
 
-	pipeline_body, err := service.Pipeline.GetOnebody(pipeline_id)
-	if err != nil {
-		return nil, err
-	}
+	// pipeline_body, err := service.Pipeline.GetOnebody(pipeline_id)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	r.Response.WriteExit(pipeline_body)
+	// r.Response.WriteExit(pipeline_body)
 	return nil, nil
 
 }
@@ -182,17 +182,17 @@ func (c *ControllerV1) CicdLogGetOne(ctx context.Context, req *CicdLogGetOneReq)
 	// 	r.Response.WriteStatus(http.StatusForbidden)
 	// }
 	var log_id int = r.Get("task_id").Int()
-	output, err := service.Cicd.GetOneLog(ctx, pipeline_id, log_id)
+	outputObj, err := service.Cicd.GetOneLog(ctx, pipeline_id, log_id)
 	if err != nil {
 		return nil, err
 	}
 
-	if output == nil {
+	if outputObj == nil {
 		r.Response.WriteStatus(http.StatusNotFound)
 		return nil, nil
 	}
 
-	r.Response.WriteExit(output.Output)
+	r.Response.WriteExit(outputObj)
 
 	return nil, nil
 
