@@ -111,7 +111,7 @@ type PipelineUpdateReq struct {
 	g.Meta `path:"/pipelines/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
 }
 
-// jobs
+// cicd/jobs/tasks
 type CicdGetListReq struct {
 	g.Meta `path:"/" tags:"ui" method:"get" summary:"ui console index"`
 }
