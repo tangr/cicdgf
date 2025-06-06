@@ -441,6 +441,7 @@ func (s *agentCICD) AgentRun() {
 				}
 
 				if response.StatusCode != 200 && response.StatusCode != 304 {
+					g.Log().Debugf(ctx, "Get StatusCode: %d, %s", response.StatusCode, response.ReadAll())
 					// 状态码不是200时等待一段时间再重试
 					time.Sleep(time.Duration(syncInterval) * time.Second)
 					continue
