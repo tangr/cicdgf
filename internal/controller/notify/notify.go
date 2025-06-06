@@ -144,7 +144,7 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 
 		// g.Log().Info(ctx, "count: %d", count)
 		if count == 0 {
-			g.Log().Error(ctx, "ciAgentKey:", ciAgentKey)
+			g.Log().Debugf(ctx, "ciAgentKey: %s", ciAgentKey)
 			r.Response.Status = 404
 			r.Response.WriteJson(g.Map{
 				"code":    0,
