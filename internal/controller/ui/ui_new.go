@@ -12,127 +12,127 @@ import (
 )
 
 type UiReq struct {
-	g.Meta `path:"/ui" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/ui" tags:"ui" method:"get" summary:"UiReq"`
 }
 
 // auth
 type AuthLoginReq struct {
-	g.Meta `path:"/login" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/login" tags:"ui" method:"get" summary:"AuthLoginReq"`
 }
 type AuthCallbackReq struct {
-	g.Meta `path:"/callback" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/callback" tags:"ui" method:"get" summary:"AuthCallbackReq"`
 }
 type AuthLogoutReq struct {
-	g.Meta `path:"/logout" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/logout" tags:"ui" method:"get" summary:"AuthLogoutReq"`
 }
 
 // groups
 type GroupGetListReq struct {
-	g.Meta `path:"/groups" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/groups" tags:"ui" method:"get" summary:"GroupGetListReq"`
 }
 type GroupNewReq struct {
-	g.Meta `path:"/groupnew" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/groupnew" tags:"ui" method:"get" summary:"GroupNewReq"`
 }
 type GroupCreateReq struct {
-	g.Meta `path:"/groups" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/groups" tags:"ui" method:"post" summary:"GroupCreateReq"`
 }
 type GroupGetOneReq struct {
-	g.Meta `path:"/groups/{id}" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/groups/{id}" tags:"ui" method:"get" summary:"GroupGetOneReq"`
 }
 type GroupUpdateReq struct {
-	g.Meta `path:"/groups/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/groups/{id}/put" tags:"ui" method:"post" summary:"GroupUpdateReq"`
 }
 
 // users
 type UserGetListReq struct {
-	g.Meta `path:"/users" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/users" tags:"ui" method:"get" summary:"UserGetListReq"`
 }
 type UserNewReq struct {
-	g.Meta `path:"/usernew" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/usernew" tags:"ui" method:"get" summary:"UserNewReq"`
 }
 type UserCreateReq struct {
-	g.Meta `path:"/users" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/users" tags:"ui" method:"post" summary:"UserCreateReq"`
 }
 type UserGetOneReq struct {
-	g.Meta `path:"/users/{id}" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/users/{id}" tags:"ui" method:"get" summary:"UserGetOneReq"`
 }
 type UserUpdateReq struct {
-	g.Meta `path:"/users/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/users/{id}/put" tags:"ui" method:"post" summary:"UserUpdateReq"`
 }
 
 // agents
 type AgentGetListReq struct {
-	g.Meta `path:"/agents" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/agents" tags:"ui" method:"get" summary:"AgentGetListReq"`
 }
 type AgentNewReq struct {
-	g.Meta `path:"/agentnew" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/agentnew" tags:"ui" method:"get" summary:"AgentNewReq"`
 }
 type AgentCreateReq struct {
-	g.Meta `path:"/agents" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/agents" tags:"ui" method:"post" summary:"AgentCreateReq"`
 }
 type AgentGetOneReq struct {
-	g.Meta `path:"/agents/{id}" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/agents/{id}" tags:"ui" method:"get" summary:"AgentGetOneReq"`
 }
 type AgentUpdateReq struct {
-	g.Meta `path:"/agents/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/agents/{id}/put" tags:"ui" method:"post" summary:"AgentUpdateReq"`
 }
 
 // scripts
 type ScriptGetListReq struct {
-	g.Meta `path:"/scripts" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/scripts" tags:"ui" method:"get" summary:"ScriptGetListReq"`
 }
 type ScriptNewReq struct {
-	g.Meta `path:"/scriptnew" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/scriptnew" tags:"ui" method:"get" summary:"ScriptNewReq"`
 }
 type ScriptCreateReq struct {
-	g.Meta `path:"/scripts" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/scripts" tags:"ui" method:"post" summary:"ScriptCreateReq"`
 }
 type ScriptGetOneReq struct {
-	g.Meta `path:"/scripts/{id}" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/scripts/{id}" tags:"ui" method:"get" summary:"ScriptGetOneReq"`
 }
 type ScriptUpdateReq struct {
-	g.Meta `path:"/scripts/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/scripts/{id}/put" tags:"ui" method:"post" summary:"ScriptUpdateReq"`
 }
 
 // pipelines
 type PipelineGetListReq struct {
-	g.Meta `path:"/pipelines" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/pipelines" tags:"ui" method:"get" summary:"PipelineGetListReq"`
 }
 type PipelineNewReq struct {
-	g.Meta `path:"/pipelinenew" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/pipelinenew" tags:"ui" method:"get" summary:"PipelineNewReq"`
 }
 type PipelineCreateReq struct {
-	g.Meta `path:"/pipelines" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/pipelines" tags:"ui" method:"post" summary:"PipelineCreateReq"`
 }
 type PipelineGetOneReq struct {
-	g.Meta `path:"/pipelines/{id}" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/pipelines/{id}" tags:"ui" method:"get" summary:"PipelineGetOneReq"`
 }
 type PipelineUpdateReq struct {
-	g.Meta `path:"/pipelines/{id}/put" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/pipelines/{id}/put" tags:"ui" method:"post" summary:"PipelineUpdateReq"`
 }
 
 // cicd/jobs/tasks
 type CicdGetListReq struct {
-	g.Meta `path:"/" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/" tags:"ui" method:"get" summary:"CicdGetListReq"`
 }
 type CicdGetOneReq struct {
-	g.Meta `path:"/{id}" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/{id}" tags:"ui" method:"get" summary:"CicdGetOneReq"`
 }
 type CicdBodyGetOneReq struct {
-	g.Meta `path:"/{id}/body" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/{id}/body" tags:"ui" method:"get" summary:"CicdBodyGetOneReq"`
 }
 type CicdJobCreateReq struct {
-	g.Meta `path:"/{pipeline_id}/newjob" tags:"ui" method:"post" summary:"ui console index"`
+	g.Meta `path:"/{pipeline_id}/newjob" tags:"ui" method:"post" summary:"CicdJobCreateReq"`
 }
 type CicdJobGetOneReq struct {
-	g.Meta `path:"/{pipeline_id}/{job_id}" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/{pipeline_id}/{job_id}" tags:"ui" method:"get" summary:"CicdJobGetOneReq"`
 }
 type CicdLogGetOneReq struct {
-	g.Meta `path:"/{pipeline_id}/{task_id}/log" tags:"ui" method:"get" summary:"ui console index"`
+	g.Meta `path:"/{pipeline_id}/{task_id}/log" tags:"ui" method:"get" summary:"CicdLogGetOneReq"`
 }
 
 // type CicdGetListPkgsReq struct {
-// 	g.Meta `path:"/{id}/pkgs" tags:"ui" method:"get" summary:"ui console index"`
+// 	g.Meta `path:"/{id}/pkgs" tags:"ui" method:"get" summary:"CicdGetListPkgsReq"`
 // }
 
 type IUiV1 interface {
