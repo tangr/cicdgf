@@ -165,7 +165,7 @@ func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []uint, 
 	ctxTimeout, cancel := context.WithTimeout(ctx, timeoutDuration)
 	defer cancel()
 
-	done := make(chan DoneItem, 1)
+	doneChan := make(chan DoneItem, 1)
 
 	// Register listening channels
 	registerNotificationChannels(agentIds)
@@ -173,11 +173,11 @@ func performLongPolling(ctx context.Context, r *ghttp.Request, agentIds []uint, 
 	defer cleanupNotificationChannels(agentIds)
 
 	// Start listener goroutines
-	startListenerGoroutines(ctxTimeout, agentIds, done)
+	startListenerGoroutines(ctxTimeout, agentIds, doneChan)
 
 	// Wait for results
 	select {
-	case notification := <-done:
+	case notification := <-doneChan:
 		r.Response.Status = 200
 		r.Response.WriteJson(g.Map{
 			"code":    0,
@@ -217,13 +217,13 @@ func cleanupNotificationChannels(agentIds []uint) {
 	}
 }
 
-func startListenerGoroutines(ctxTimeout context.Context, agentIds []uint, done chan<- DoneItem) {
+func startListenerGoroutines(ctxTimeout context.Context, agentIds []uint, doneChan chan<- DoneItem) {
 	for _, agentId := range agentIds {
 		go func(id uint) {
 			select {
 			case taskId := <-notificationChannelsMap[id]:
 				select {
-				case done <- DoneItem{AgentId: id, TaskId: taskId}:
+				case doneChan <- DoneItem{AgentId: id, TaskId: taskId}:
 				default:
 				}
 			case <-ctxTimeout.Done():
