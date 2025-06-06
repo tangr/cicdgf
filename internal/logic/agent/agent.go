@@ -303,12 +303,16 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 					g.Log().Error(ctx, taskId, err)
 				}
 
-				g.Log().Debug(ctx, "GetScriptByTask")
+				g.Log().Debug(ctx, "HandleJob GetScriptByTask")
 
 				var script Script = s.GetScriptByTask(taskId)
 				script_body := script.Body
 				script_envs := script.Envs
 				script_args := script.Args
+
+				g.Log().Debugf(ctx, "HandleJob GetScriptByTask script_body: %s", script_body)
+				g.Log().Debugf(ctx, "HandleJob GetScriptByTask script_args: %s", script_args)
+				g.Log().Debugf(ctx, "HandleJob GetScriptByTask script_envs: %s", script_envs)
 
 				jobPath := dataPathDir + strconv.Itoa(taskId)
 				jobPathOutput := jobPath + ".output"

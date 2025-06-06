@@ -78,7 +78,7 @@ type JobInfoMap struct {
 	Concurrency int    `json:"concurrency"`
 	JobType     string `json:"jobType"`
 	JobStatus   string `json:"jobStatus"`
-	Script      Script `json:"script"`
+	Script      string `json:"script"`
 	Comment     string `json:"comment"`
 	Author      string `json:"author"`
 	CreatedAt   int    `json:"createdAt"`

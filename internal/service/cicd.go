@@ -184,6 +184,24 @@ func (s *cicdService) CreateJob(ctx context.Context, pipeline_id int, envs map[s
 	if err != nil {
 		g.Log().Error(ctx, err)
 	}
+	if job_type == "BUILD" {
+		new_task := g.Map{
+			"pipeline_id": pipeline_id,
+			"agent_id":    agent_id,
+			"job_type":    jobtype,
+			"job_id":      job_id,
+			"task_status": "pending",
+			"ipaddr":      agent_id,
+			"updated_at":  gtime.Now().Timestamp(),
+		}
+		_, err := dao.CicdLog.Ctx(ctx).
+			Data(new_task).
+			Save()
+		if err != nil {
+			g.Log().Error(ctx, err)
+		}
+	}
+
 	return job_id, nil
 }
 
