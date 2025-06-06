@@ -24,5 +24,12 @@ func (c *ControllerV1) Update(ctx context.Context, req *v1.UpdateReq) (res *v1.U
 		UpdatedAt:  req.UpdatedAt,
 		Output:     req.Output,
 	}).WherePri(req.Id).Update()
+
+	if req.JobType == "BUILD" {
+		_, err = dao.CicdJob.Ctx(ctx).Data(do.CicdJob{
+			JobStatus: req.TaskStatus,
+		}).WherePri(req.JobId).Update()
+	}
+
 	return
 }
