@@ -3,7 +3,6 @@ package notify
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
@@ -133,28 +132,28 @@ func checkExistingNotifications(ctx context.Context, r *ghttp.Request, agentIds 
 			return nil, true, nil
 		}
 
-		// Check if agent exists
-		ciAgentKey := "ciagent:" + strconv.FormatUint(uint64(agentId), 10)
-		count, redisErr := g.Redis().Exists(ctx, ciAgentKey)
-		if redisErr != nil {
-			g.Log().Error(ctx, "Redis error:", redisErr)
-			r.Response.WriteStatus(500)
-			return nil, true, fmt.Errorf("redis exists operation failed: %w", redisErr)
-		}
+		// // Check if agent exists
+		// ciAgentKey := "ciagent:" + strconv.FormatUint(uint64(agentId), 10)
+		// count, redisErr := g.Redis().Exists(ctx, ciAgentKey)
+		// if redisErr != nil {
+		// 	g.Log().Error(ctx, "Redis error:", redisErr)
+		// 	r.Response.WriteStatus(500)
+		// 	return nil, true, fmt.Errorf("redis exists operation failed: %w", redisErr)
+		// }
 
-		// g.Log().Info(ctx, "count: %d", count)
-		if count == 0 {
-			g.Log().Debugf(ctx, "ciAgentKey: %s", ciAgentKey)
-			r.Response.Status = 404
-			r.Response.WriteJson(g.Map{
-				"code":    0,
-				"message": "agentId Not Found",
-				"data": g.Map{
-					"agentId": agentId,
-				},
-			})
-			return nil, true, nil
-		}
+		// // g.Log().Info(ctx, "count: %d", count)
+		// if count == 0 {
+		// 	g.Log().Debugf(ctx, "ciAgentKey: %s", ciAgentKey)
+		// 	r.Response.Status = 404
+		// 	r.Response.WriteJson(g.Map{
+		// 		"code":    0,
+		// 		"message": "agentId Not Found",
+		// 		"data": g.Map{
+		// 			"agentId": agentId,
+		// 		},
+		// 	})
+		// 	return nil, true, nil
+		// }
 
 	}
 
