@@ -25,6 +25,7 @@ func SyncNewCIJob(ctx context.Context) {
 			// now := time.Now()
 
 			g.Log().Debug(ctx, "SyncNewCIJob CicdJob")
+
 			err := dao.CicdLog.Ctx(ctx).
 				Fields("id,agent_id").
 				Where("job_type", "BUILD").
@@ -54,11 +55,8 @@ func SyncNewCIJob(ctx context.Context) {
 					if err != nil {
 						g.Log().Fatal(ctx, err)
 					}
-
 				}
-
 			}
-
 		}
 	}()
 }
