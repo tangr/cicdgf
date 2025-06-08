@@ -104,7 +104,10 @@ func (c *ControllerV1) CicdJobCreate(ctx context.Context, req *CicdJobCreateReq)
 		return nil, err
 	}
 
-	r.Response.RedirectTo("/" + fmt.Sprint(pipeline_id) + "/" + strconv.FormatInt(job_id, 10))
+	redirectURL := "/" + fmt.Sprint(pipeline_id) + "/" + strconv.FormatInt(job_id, 10)
+	r.Response.Header().Add("Location", redirectURL)
+	r.Response.WriteStatus(302)
+	r.Response.WriteExit()
 
 	// var agent_name string = r.Get("agent_name").String()
 	// var agent_ipaddr string = r.Get("agent_ipaddr").String()
