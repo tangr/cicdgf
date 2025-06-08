@@ -25,6 +25,7 @@ var (
 			s := g.Server()
 
 			notify.SyncNewCIJob(ctx)
+			notify.SyncNewCDJob(ctx)
 
 			s.Group("/api", func(group *ghttp.RouterGroup) {
 				// group.Middleware(ghttp.MiddlewareHandlerResponse)
