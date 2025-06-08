@@ -362,6 +362,12 @@ func (s *agentCICD) HandleJob(ctx context.Context, jobv *WsServerSendMap) {
 			g.Log().Debugf(ctx, "Receive Put response: %s", gconv.String(res))
 			g.Log().Debugf(ctx, "Receive Put StatusCode: %s", gconv.String(response.StatusCode))
 
+			g.Log().Debugf(ctx, "Send Put req: %s", gconv.String(taskStatus))
+
+			if taskStatus == "success" || taskStatus == "failed" {
+				g.Log().Debugf(ctx, "Send Put req2: %s", gconv.String(taskStatus))
+				return
+			}
 		}
 	}
 
@@ -431,6 +437,7 @@ func (s *agentCICD) AgentRun() {
 				agentStatus := s.PrepareAgentStatusUpdate()
 
 				// 发送Agent状态到服务器
+				g.Log().Debugf(ctx, "******************************")
 				g.Log().Debugf(ctx, "Send agentStatus: %s", gconv.String(agentStatus))
 				response, err := client.Post(ctx, apiUrl+"/notifys/v1", agentStatus)
 				if err != nil {
