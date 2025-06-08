@@ -11,10 +11,11 @@ import (
 
 func SyncNewCIJob(ctx context.Context) {
 	type NewJobBuild struct {
-		Id      uint `json:"task_id"`
+		Id      uint `json:"id"`
 		AgentId uint `json:"agent_id"`
 	}
-	var newJobs = new([]NewJobBuild)
+	// var newJobs = new([]NewJobBuild)
+	var newJobs []NewJobBuild
 
 	ticker := time.NewTicker(15 * time.Second)
 
@@ -26,19 +27,22 @@ func SyncNewCIJob(ctx context.Context) {
 
 			g.Log().Debug(ctx, "SyncNewCIJob CicdJob")
 
+			newJobs = newJobs[:0]
 			err := dao.CicdLog.Ctx(ctx).
 				Fields("id,agent_id").
 				Where("job_type", "BUILD").
 				WhereIn("task_status", g.Slice{"pending"}).
-				Scan(newJobs)
+				Scan(&newJobs)
 
 			if err != nil {
 				g.Log().Debug(ctx, "Failed to get BUILD jobs:", err)
 			}
 
+			g.Log().Debug(ctx, "SyncNewCIJob newJobs:", newJobs)
+
 			expireSecs := int64(10 * 60)
 
-			for _, newJob := range *newJobs {
+			for _, newJob := range newJobs {
 				agentId := newJob.AgentId
 				taskId := newJob.Id
 
