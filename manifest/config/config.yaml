@@ -10,7 +10,7 @@ server:
     level: "info"
 
 cas-sso:
-  cas-server-url: https://sso-prod.yax.tech/cas
+  cas-server-url: https://sso-test.exodushk.com/cas
   service-url: http://localhost:8000
   # ServerURL: "https://sso-prod.yax.tech/cas"
   # Service: "http://localhost:8000"
